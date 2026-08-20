@@ -1,0 +1,44 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+www/
+dist/
+build/
+
+# Assets (minified)
+assets/
+
+# Android
+android/
+app/
+
+# iOS
+ios/
+
+# Generated files
+*.min.js
+*.min.css
+*.bundle.js
+
+# Package manager files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+bun.lock
+
+# Other
+*.md
+*.json
+*.html
+*.css
+*.svg
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.ico
+*.woff
+*.woff2
+*.ttf
+*.eot

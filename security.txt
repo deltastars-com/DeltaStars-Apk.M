@@ -1,0 +1,6 @@
+Contact: mailto:security@deltastars.store
+Contact: https://deltastars.store
+Policy: https://deltastars.store/privacy-policy.html
+Preferred-Languages: ar, en
+Canonical: https://deltastars.store/security.txt
+Expires: 2027-08-19T00:00:00.000Z

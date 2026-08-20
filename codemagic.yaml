@@ -1,0 +1,218 @@
+workflows:
+  android-workflow:
+    name: Android Build & Release
+    instance_type: linux_x2
+    max_build_duration: 120
+    environment:
+      android_signing:
+        - deltastars_keystore
+      vars:
+        PACKAGE_NAME: "com.deltastars.store"
+        GRADLE_WRAPPER_PATH: "./gradlew"
+    triggering:
+      events:
+        - push
+        - pull_request
+      branch:
+        include_patterns:
+          - main
+          - develop
+    scripts:
+      - name: Set up signing config
+        script: |
+          cd app
+          cat >> build.gradle << EOF
+          android {
+              signingConfigs {
+                  release {
+                      storeFile file("../deltastars-keystore.jks")
+                      storePassword System.getenv("KEYSTORE_PASSWORD")
+                      keyAlias System.getenv("KEY_ALIAS")
+                      keyPassword System.getenv("KEY_PASSWORD")
+                  }
+              }
+          }
+          EOF
+      - name: Build APK
+        script: |
+          chmod +x ./gradlew
+          ./gradlew assembleRelease
+      - name: Build AAB
+        script: |
+          ./gradlew bundleRelease
+    artifacts:
+      - app/build/outputs/apk/release/**/*.apk
+      - app/build/outputs/bundle/release/**/*.aab
+    publishing:
+      email:
+        recipients:
+          - INFO@DELTASTARS-KSA.COM
+        notify:
+          success: true
+          failure: true
+      slack:
+        channel: "#builds"
+        notify_on_build_start: true
+        notify:
+          success: true
+          failure: true
+
+  ios-workflow:
+    name: iOS Build & Release
+    instance_type: mac_mini_m1
+    max_build_duration: 120
+    environment:
+      ios_signing:
+        - deltastars_ios_cert
+      vars:
+        PACKAGE_NAME: "com.deltastars.store"
+        XCODE_WORKSPACE: "ios/DeltaStars.xcworkspace"
+        XCODE_SCHEME: "DeltaStars"
+    triggering:
+      events:
+        - push
+        - pull_request
+      branch:
+        include_patterns:
+          - main
+          - develop
+    scripts:
+      - name: Install dependencies
+        script: |
+          cd ios
+          pod install
+      - name: Build IPA
+        script: |
+          cd ios
+          xcodebuild -workspace DeltaStars.xcworkspace \
+            -scheme DeltaStars \
+            -configuration Release \
+            -derivedDataPath build \
+            -archivePath build/DeltaStars.xcarchive \
+            archive
+          xcodebuild -exportArchive \
+            -archivePath build/DeltaStars.xcarchive \
+            -exportOptionsPlist exportOptions.plist \
+            -exportPath build/ipa
+    artifacts:
+      - ios/build/ipa/**/*.ipa
+    publishing:
+      email:
+        recipients:
+          - INFO@DELTASTARS-KSA.COM
+        notify:
+          success: true
+          failure: true
+      slack:
+        channel: "#builds"
+        notify_on_build_start: true
+        notify:
+          success: true
+          failure: true
+
+  google-play-release:
+    name: Release to Google Play
+    instance_type: linux_x2
+    max_build_duration: 120
+    environment:
+      vars:
+        PACKAGE_NAME: "com.deltastars.store"
+    triggering:
+      events:
+        - tag
+      tag:
+        patterns:
+          - pattern: 'v*'
+            include: true
+    scripts:
+      - name: Build AAB
+        script: |
+          chmod +x ./gradlew
+          ./gradlew bundleRelease
+      - name: Upload to Google Play
+        script: |
+          # Install Google Play API tools
+          pip install google-auth-oauthlib google-auth-httplib2 google-api-python-client
+          
+          # Upload AAB to Google Play
+          python3 << EOF
+          from google.oauth2.service_account import Credentials
+          from googleapiclient.discovery import build
+          import os
+          
+          # Load credentials from environment
+          credentials = Credentials.from_service_account_info(
+              json.loads(os.getenv('GOOGLE_PLAY_CREDENTIALS'))
+          )
+          
+          service = build('androidpublisher', 'v3', credentials=credentials)
+          
+          # Upload AAB
+          with open('app/build/outputs/bundle/release/app-release.aab', 'rb') as aab:
+              service.edits().bundles().upload(
+                  packageName='$PACKAGE_NAME',
+                  editId=service.edits().insert(packageName='$PACKAGE_NAME').execute()['id'],
+                  media_body=aab
+              ).execute()
+          EOF
+    artifacts:
+      - app/build/outputs/bundle/release/**/*.aab
+    publishing:
+      email:
+        recipients:
+          - INFO@DELTASTARS-KSA.COM
+        notify:
+          success: true
+          failure: true
+
+  app-store-release:
+    name: Release to App Store
+    instance_type: mac_mini_m1
+    max_build_duration: 120
+    environment:
+      ios_signing:
+        - deltastars_ios_cert
+      vars:
+        PACKAGE_NAME: "com.deltastars.store"
+    triggering:
+      events:
+        - tag
+      tag:
+        patterns:
+          - pattern: 'v*'
+            include: true
+    scripts:
+      - name: Install dependencies
+        script: |
+          cd ios
+          pod install
+      - name: Build and upload IPA
+        script: |
+          cd ios
+          xcodebuild -workspace DeltaStars.xcworkspace \
+            -scheme DeltaStars \
+            -configuration Release \
+            -derivedDataPath build \
+            -archivePath build/DeltaStars.xcarchive \
+            archive
+          
+          xcodebuild -exportArchive \
+            -archivePath build/DeltaStars.xcarchive \
+            -exportOptionsPlist exportOptions.plist \
+            -exportPath build/ipa
+          
+          # Upload to App Store
+          xcrun altool --upload-app \
+            -f build/ipa/DeltaStars.ipa \
+            -t ios \
+            -u "$APPLE_ID" \
+            -p "$APPLE_ID_PASSWORD"
+    artifacts:
+      - ios/build/ipa/**/*.ipa
+    publishing:
+      email:
+        recipients:
+          - INFO@DELTASTARS-KSA.COM
+        notify:
+          success: true
+          failure: true

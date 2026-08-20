@@ -1,0 +1,75 @@
+name: Create Release
+
+on:
+  push:
+    tags: [ 'v*' ]
+
+permissions:
+  contents: write
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Create web release zip
+        run: |
+          zip -r deltastars-v${{ steps.version.outputs.VERSION }}-web.zip \
+            index.html \
+            robots.txt \
+            security.txt \
+            sitemap.xml \
+            terms-of-service.html \
+            privacy-policy.html \
+            manifest.json \
+            package.json \
+            assets/ \
+            -x "*.DS_Store"
+
+      - name: Create source code zip
+        run: |
+          zip -r deltastars-v${{ steps.version.outputs.VERSION }}-source.zip \
+            . \
+            -x ".git/*" \
+            -x "node_modules/*" \
+            -x "android/app/build/*" \
+            -x "ios/App/build/*" \
+            -x "www/*" \
+            -x "*.DS_Store"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "🚀 Delta Stars Store v${{ steps.version.outputs.VERSION }}"
+          body: |
+            ## 🌟 نجوم دلتا — الإصدار ${{ steps.version.outputs.VERSION }}
+            
+            ### 📦 الملفات المتاحة:
+            - **deltastars-v${{ steps.version.outputs.VERSION }}-web.zip** — ملفات الويب الجاهزة للنشر
+            - **deltastars-v${{ steps.version.outputs.VERSION }}-source.zip** — الكود المصدري الكامل
+            
+            ### 📱 للبناء المحلي:
+            ```bash
+            npm install
+            npm run build:web
+            npm run build:android  # يتطلب Android SDK
+            npm run build:ios      # يتطلب macOS + Xcode
+            ```
+            
+            ### 🌐 الموقع المباشر:
+            https://deltastars.netlify.app
+            
+            ---
+            حقوق النشر © نجوم دلتا للتجارة
+          files: |
+            deltastars-v${{ steps.version.outputs.VERSION }}-web.zip
+            deltastars-v${{ steps.version.outputs.VERSION }}-source.zip
+          draft: false
+          prerelease: false

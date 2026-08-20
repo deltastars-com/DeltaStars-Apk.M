@@ -1,0 +1,199 @@
+# ══════════════════════════════════════════════════════════════
+# Delta Stars Store — Netlify Configuration
+# Security-hardened deployment with optimized function settings.
+# ══════════════════════════════════════════════════════════════
+
+# ── Serverless Functions Configuration ────────────────────────
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+  included_files = []
+
+# ── Function Environment ─────────────────────────────────────
+[functions.environment]
+  NODE_VERSION = "20"
+  # Rate Limiting (Upstash Redis)
+  # UPSTASH_REDIS_REST_URL = "your_upstash_redis_url"
+  # UPSTASH_REDIS_REST_TOKEN = "your_upstash_redis_token"
+
+# ── Global Security Headers ──────────────────────────────────
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    X-XSS-Protection = "1; mode=block"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Strict-Transport-Security = "max-age=63072000; includeSubDomains; preload"
+    Cross-Origin-Opener-Policy = "same-origin"
+    Cross-Origin-Embedder-Policy = "credentialless"
+    Cross-Origin-Resource-Policy = "same-origin"
+    Permissions-Policy = "geolocation=(self), camera=(), microphone=(), payment=(self), usb=(), interest-cohort=(), autoplay=(self), fullscreen=(self)"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.moyasar.com https://www.googletagmanager.com https://www.google-analytics.com https://apis.google.com https://accounts.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.moyasar.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https: http:; media-src 'self' data: blob:; worker-src 'self' blob:; child-src 'self' blob: https://cdn.moyasar.com; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.firebaseio.com https://*.googleapis.com https://*.google.com https://*.gstatic.com https://api.moyasar.com https://cdn.moyasar.com https://api.authentica.sa https://generativelanguage.googleapis.com https://deltastars.store https://www.google-analytics.com; frame-src https://cdn.moyasar.com https://www.google.com https://www.google.com/recaptcha/ https://recaptcha.google.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self' https://api.moyasar.com; upgrade-insecure-requests"
+
+# ── API Function Headers (CORS for API calls) ────────────────
+[[headers]]
+  for = "/api/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "https://deltastars.store"
+    Access-Control-Allow-Methods = "GET, POST, OPTIONS"
+    Access-Control-Allow-Headers = "Content-Type, Authorization, X-Requested-With, X-Webhook-Signature"
+    Access-Control-Max-Age = "86400"
+    Cache-Control = "no-store, no-cache, must-revalidate"
+
+# ── Security Headers for sensitive paths ─────────────────────
+[[headers]]
+  for = "/admin/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+    Cache-Control = "no-store"
+
+[[headers]]
+  for = "/dashboard/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+    Cache-Control = "no-store"
+
+[[headers]]
+  for = "/auth/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+    Cache-Control = "no-store"
+
+# ── Block directory listing ──────────────────────────────────
+[[headers]]
+  for = "/netlify/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+
+# ── Static asset caching ─────────────────────────────────────
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "*.css"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "*.woff2"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# ── API Redirects ────────────────────────────────────────────
+[[redirects]]
+  from = "/api/otp/send"
+  to = "/.netlify/functions/otp-send"
+  status = 200
+
+[[redirects]]
+  from = "/api/otp/verify"
+  to = "/.netlify/functions/otp-verify"
+  status = 200
+
+[[redirects]]
+  from = "/api/otp/notify"
+  to = "/.netlify/functions/otp-notify"
+  status = 200
+
+[[redirects]]
+  from = "/api/payment/create"
+  to = "/.netlify/functions/create-payment-intent"
+  status = 200
+
+[[redirects]]
+  from = "/api/payment/verify"
+  to = "/.netlify/functions/verify-payment"
+  status = 200
+
+[[redirects]]
+  from = "/api/payment/cancel"
+  to = "/.netlify/functions/cancel-payment"
+  status = 200
+
+[[redirects]]
+  from = "/api/payment/webhook"
+  to = "/.netlify/functions/payment-webhook"
+  status = 200
+
+[[redirects]]
+  from = "/api/contact"
+  to = "/.netlify/functions/contact-form"
+  status = 200
+
+# ── Security Redirects ───────────────────────────────────────
+# Force HTTPS
+[[redirects]]
+  from = "http://www.deltastars.store/*"
+  to = "https://deltastars.store/:splat"
+  status = 301!
+
+[[redirects]]
+  from = "http://deltastars.store/*"
+  to = "https://deltastars.store/:splat"
+  status = 301!
+
+# Redirect www to apex
+[[redirects]]
+  from = "https://www.deltastars.store/*"
+  to = "https://deltastars.store/:splat"
+  status = 301!
+
+# ── Block common attack paths ────────────────────────────────
+[[redirects]]
+  from = "/wp-admin/*"
+  to = "/404"
+  status = 404
+
+[[redirects]]
+  from = "/wp-login.php"
+  to = "/404"
+  status = 404
+
+[[redirects]]
+  from = "/xmlrpc.php"
+  to = "/404"
+  status = 404
+
+[[redirects]]
+  from = "/.env"
+  to = "/404"
+  status = 404
+
+[[redirects]]
+  from = "/.git/*"
+  to = "/404"
+  status = 404
+
+[[redirects]]
+  from = "/.svn/*"
+  to = "/404"
+  status = 404
+
+[[redirects]]
+  from = "/.htaccess"
+  to = "/404"
+  status = 404
+
+[[redirects]]
+  from = "/cgi-bin/*"
+  to = "/404"
+  status = 404
+
+[[redirects]]
+  from = "/phpmyadmin/*"
+  to = "/404"
+  status = 404
+
+# ── SPA Fallback (MUST be last) ─────────────────────────────
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

@@ -1,0 +1,130 @@
+# ══════════════════════════════════════════════════════════════
+# Delta Stars Store — Advanced Security & Performance Headers
+# ══════════════════════════════════════════════════════════════
+
+# ── Global Security Headers (all pages) ──────────────────────
+/*
+  # === Anti-Clickjacking ===
+  X-Frame-Options: DENY
+
+  # === Anti-MIME-Sniffing ===
+  X-Content-Type-Options: nosniff
+
+  # === Anti-XSS (legacy browsers) ===
+  X-XSS-Protection: 1; mode=block
+
+  # === Referrer Policy (prevent data leakage) ===
+  Referrer-Policy: strict-origin-when-cross-origin
+
+  # === Strict Transport Security (force HTTPS, preload) ===
+  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+
+  # === Cross-Origin Isolation (prevent Spectre-class attacks) ===
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Embedder-Policy: credentialless
+  Cross-Origin-Resource-Policy: same-origin
+
+  # === Permissions Policy (deny unnecessary APIs) ===
+  Permissions-Policy: geolocation=(self), camera=(), microphone=(), payment=(self "https://cdn.moyasar.com"), usb=(), interest-cohort=(), encrypted-media=(self "https://cdn.moyasar.com"), autoplay=(self), fullscreen=(self), picture-in-picture=(), screen-wake-lock=(), serial=(), web-share=(self)
+
+  # === DNS Prefetch Control ===
+  X-DNS-Prefetch-Control: off
+
+  # === Prevent leaking server technology ===
+  Server: Delta Stars
+  X-Powered-By: Delta Stars Store
+
+  # === Content Security Policy (with nonce for inline scripts) ===
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'nonce-${NONCE}' 'strict-dynamic' https://cdn.moyasar.com https://www.googletagmanager.com https://www.google-analytics.com https://apis.google.com https://accounts.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.moyasar.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https: http:; media-src 'self' data: blob:; worker-src 'self' blob:; child-src 'self' blob: https://cdn.moyasar.com; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.firebaseio.com https://*.googleapis.com https://*.google.com https://*.gstatic.com https://api.moyasar.com https://cdn.moyasar.com https://api.authentica.sa https://generativelanguage.googleapis.com https://deltastars.store https://www.google-analytics.com; frame-src https://cdn.moyasar.com https://www.google.com https://www.google.com/recaptcha/ https://recaptcha.google.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self' https://api.moyasar.com; upgrade-insecure-requests
+
+  # === Cache Policy (default: short cache for HTML) ===
+  Cache-Control: public, max-age=300, s-maxage=600, must-revalidate
+
+# ── API Endpoints (no caching, CORS) ─────────────────────────
+/api/*
+  Cache-Control: no-store, no-cache, must-revalidate, private
+  Pragma: no-cache
+  X-Content-Type-Options: nosniff
+
+# ── Static Assets (aggressive immutable cache) ───────────────
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+  X-Content-Type-Options: nosniff
+
+# ── JavaScript files (immutable cache) ───────────────────────
+/*.js
+  Cache-Control: public, max-age=31536000, immutable
+
+# ── CSS files (immutable cache) ──────────────────────────────
+/*.css
+  Cache-Control: public, max-age=31536000, immutable
+
+# ── Image files (long cache) ─────────────────────────────────
+/*.png
+  Cache-Control: public, max-age=2592000, immutable
+/*.jpg
+  Cache-Control: public, max-age=2592000, immutable
+/*.jpeg
+  Cache-Control: public, max-age=2592000, immutable
+/*.gif
+  Cache-Control: public, max-age=2592000, immutable
+/*.svg
+  Cache-Control: public, max-age=2592000, immutable
+/*.webp
+  Cache-Control: public, max-age=2592000, immutable
+
+# ── Font files (immutable cache) ─────────────────────────────
+/*.woff
+  Cache-Control: public, max-age=31536000, immutable
+/*.woff2
+  Cache-Control: public, max-age=31536000, immutable
+/*.ttf
+  Cache-Control: public, max-age=31536000, immutable
+/*.eot
+  Cache-Control: public, max-age=31536000, immutable
+
+# ── HTML pages (no cache, always fresh) ──────────────────────
+/index.html
+  Cache-Control: no-store, no-cache, must-revalidate, private
+  Pragma: no-cache
+
+/privacy-policy.html
+  Cache-Control: public, max-age=86400, s-maxage=604800
+
+/terms-of-service.html
+  Cache-Control: public, max-age=86400, s-maxage=604800
+
+# ── Manifest (short cache) ───────────────────────────────────
+/manifest.json
+  Cache-Control: no-cache
+  Content-Type: application/manifest+json
+
+# ── Service Worker (never cache, always fresh) ───────────────
+/service-worker.js
+  Cache-Control: no-store, no-cache, must-revalidate
+  Service-Worker-Allowed: /
+
+# ── Robots & Sitemap (moderate cache) ────────────────────────
+/robots.txt
+  Cache-Control: public, max-age=86400
+
+/sitemap.xml
+  Cache-Control: public, max-age=3600
+
+# ── Favicons & Icons ─────────────────────────────────────────
+/favicon.svg
+  Cache-Control: public, max-age=604800, immutable
+
+/icon-*.png
+  Cache-Control: public, max-age=2592000, immutable
+
+/logo.png
+  Cache-Control: public, max-age=2592000, immutable
+
+/opengraph.jpg
+  Cache-Control: public, max-age=604800
+
+# ── Security.txt (for vulnerability reporting) ───────────────
+/security.txt
+  Cache-Control: public, max-age=86400
+  Content-Type: text/plain; charset=utf-8

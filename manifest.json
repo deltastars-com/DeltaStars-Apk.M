@@ -1,0 +1,121 @@
+{
+  "name": "نجوم دلتا | Delta Stars - متجر الخضروات والفواكه والتمور",
+  "short_name": "Delta Stars",
+  "description": "متجر نجوم دلتا للخضروات والفواكه والتمور عالية الجودة - السوق السعودي. توصيل مبرد سريع، أسعار الجملة، منتجات طازجة يومياً.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0b1d0b",
+  "theme_color": "#2d5a27",
+  "orientation": "portrait-primary",
+  "lang": "ar",
+  "dir": "rtl",
+  "categories": ["shopping", "food", "groceries"],
+  "iarc_rating_id": "",
+  "id": "/",
+  "prefer_related_applications": false,
+  "protocol_handlers": [
+    {
+      "protocol": "web+deltastars",
+      "url": "/?page=%s"
+    }
+  ],
+  "share_target": {
+    "action": "/?share",
+    "method": "GET",
+    "params": {
+      "title": "name",
+      "text": "description",
+      "url": "link"
+    }
+  },
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icon-1024.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "opengraph.jpg",
+      "sizes": "1200x630",
+      "type": "image/jpeg",
+      "form_factor": "wide",
+      "label": "متجر نجوم دلتا - الصفحة الرئيسية"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "الشوروم",
+      "short_name": "Showroom",
+      "url": "/?page=showroom",
+      "description": "تصفح جميع المنتجات",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "تتبع الطلب",
+      "short_name": "Track",
+      "url": "/?page=track_order",
+      "description": "تتبع طلبك",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "سلة التسوق",
+      "short_name": "Cart",
+      "url": "/?page=cart",
+      "description": "عرض سلة التسوق",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "حسابي",
+      "short_name": "Account",
+      "url": "/?page=profile",
+      "description": "إدارة حسابك الشخصي",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ],
+  "related_applications": [],
+  "handled_protocols": [
+    "web+deltastars"
+  ]
+}

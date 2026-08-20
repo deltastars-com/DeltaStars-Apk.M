@@ -1,0 +1,80 @@
+# ══════════════════════════════════════════════════════════════
+# Delta Stars Store — Git Ignore
+# ══════════════════════════════════════════════════════════════
+
+# ── Dependencies ─────────────────────────────────────────────
+node_modules/
+.pnp
+.pnp.js
+
+# ── Build outputs ────────────────────────────────────────────
+www/
+dist/
+build/
+*.apk
+*.aab
+*.ipa
+
+# ── Environment files ────────────────────────────────────────
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.*.local
+
+# ── IDE and Editor ───────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ── Capacitor / Android / iOS ────────────────────────────────
+android/app/build/
+android/.gradle/
+android/build/
+android/capacitor-cordova-android-plugins/build/
+android/capacitor-cordova-android-plugins/src/main/libs/
+ios/App/Pods/
+ios/App/build/
+*.xcodeproj/
+!ios/App/App.xcodeproj/
+
+# ── Capacitor generated ─────────────────────────────────────
+android/app/capacitor.build.gradle
+android/capacitor.settings.gradle
+
+# ── Logs ─────────────────────────────────────────────────────
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+bun-debug.log*
+
+# ── Testing ──────────────────────────────────────────────────
+coverage/
+.nyc_output/
+
+# ── Temporary files ──────────────────────────────────────────
+tmp/
+temp/
+*.tmp
+*.temp
+
+# ── Package manager ──────────────────────────────────────────
+.pnpm-store/
+.yarn/cache/
+.yarn/install-state.gz
+
+# ── Keystore files (NEVER commit) ───────────────────────────
+*.jks
+*.keystore
+!android/app/deltastars-keystore.jks
+
+# ── Source code archives (use Git releases instead) ──────────
+*.zip
+!android/app/deltastars-keystore.jks

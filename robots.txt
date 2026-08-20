@@ -1,0 +1,116 @@
+# ══════════════════════════════════════════════════════════════
+# Delta Stars Store — Robots Configuration
+# Security-first crawling rules with anti-scraping protections.
+# ══════════════════════════════════════════════════════════════
+
+# ── Default: allow all friendly bots ──────────────────────────
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /service-worker.js
+Disallow: /.netlify/
+Disallow: /admin/
+Disallow: /dashboard/
+Disallow: /checkout/
+Disallow: /payment/
+Disallow: /auth/
+Disallow: /login/
+Disallow: /register/
+Disallow: /*.json$
+Disallow: /*?search=
+Disallow: /*?page=
+Disallow: /*?filter=
+Disallow: /*?sort=
+Crawl-delay: 1
+
+# ── Block known malicious bots ───────────────────────────────
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /
+
+User-agent: Bytespider
+Disallow: /
+
+User-agent: GPTBot
+Disallow: /
+
+User-agent: ChatGPT-User
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: Google-Extended
+Disallow: /
+
+User-agent: anthropic-ai
+Disallow: /
+
+User-agent: ClaudeBot
+Disallow: /
+
+# ── Block scrapers and exploit scanners ──────────────────────
+User-agent: masscan
+Disallow: /
+
+User-agent: sqlmap
+Disallow: /
+
+User-agent: nikto
+Disallow: /
+
+User-agent: nmap
+Disallow: /
+
+User-agent: wpscan
+Disallow: /
+
+User-agent: joomla
+Disallow: /
+
+# ── Allow search engine bots ─────────────────────────────────
+User-agent: Googlebot
+Allow: /
+Disallow: /api/
+Disallow: /service-worker.js
+Crawl-delay: 0
+
+User-agent: Bingbot
+Allow: /
+Disallow: /api/
+Disallow: /service-worker.js
+Crawl-delay: 2
+
+User-agent: Yandex
+Allow: /
+Disallow: /api/
+Disallow: /service-worker.js
+Crawl-delay: 3
+
+# ── Allow social media crawlers ──────────────────────────────
+User-agent: Twitterbot
+Allow: /
+
+User-agent: facebookexternalhit
+Allow: /
+
+User-agent: LinkedInBot
+Allow: /
+
+User-agent: WhatsApp
+Allow: /
+
+User-agent: TelegramBot
+Allow: /
+
+# ── Sitemap ──────────────────────────────────────────────────
+Sitemap: https://deltastars.store/sitemap.xml
+Sitemap: https://deltastars.store/sitemap.xml.gz

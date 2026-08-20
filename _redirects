@@ -1,0 +1,61 @@
+# ══════════════════════════════════════════════════════════════
+# Delta Stars – Netlify Routing & Security
+# Order matters: Security blocks first, API rewrites, then SPA fallback.
+# ══════════════════════════════════════════════════════════════
+
+# ── Block common attack paths ────────────────────────────────
+/wp-admin/*              /404                        404
+/wp-login.php            /404                        404
+/xmlrpc.php              /404                        404
+/.env                    /404                        404
+/.env.local              /404                        404
+/.env.production         /404                        404
+/.env.development        /404                        404
+/.git/*                  /404                        404
+/.git/HEAD               /404                        404
+/.svn/*                  /404                        404
+/.htaccess               /404                        404
+/.htpasswd               /404                        404
+/cgi-bin/*               /404                        404
+/phpmyadmin/*            /404                        404
+/phpinfo.php             /404                        404
+/server-status           /404                        404
+/server-info             /404                        404
+/backup/*                /404                        404
+/admin.php               /404                        404
+/install.php             /404                        404
+/setup.php               /404                        404
+/config.php              /404                        404
+/web.config              /404                        404
+/crossdomain.xml         /404                        404
+/sitemap.xml.gz          /sitemap.xml                200
+
+# ── API → Netlify Functions ──────────────────────────────────
+/api/otp/send            /.netlify/functions/otp-send              200
+/api/otp/verify          /.netlify/functions/otp-verify            200
+/api/otp/notify          /.netlify/functions/otp-notify            200
+/api/payment/create      /.netlify/functions/create-payment-intent 200
+/api/payment/verify      /.netlify/functions/verify-payment        200
+/api/payment/cancel      /.netlify/functions/cancel-payment        200
+/api/payment/webhook     /.netlify/functions/payment-webhook      200
+/api/contact             /.netlify/functions/contact-form          200
+
+# ── Canonical-domain redirects (enforce HTTPS + apex) ────────
+https://www.deltastars.store/*   https://deltastars.store/:splat  301!
+http://www.deltastars.store/*    https://deltastars.store/:splat  301!
+http://deltastars.store/*        https://deltastars.store/:splat  301!
+
+# ── Security Headers for API ─────────────────────────────────
+/api/*
+  Cache-Control: no-store, no-cache, must-revalidate
+
+# ── Block sensitive files from being served ──────────────────
+/package.json              /404                        404
+/package-lock.json         /404                        404
+/node_modules/*            /404                        404
+/netlify.toml              /404                        404
+/README.md                 /404                        404
+/README_DEPLOY.txt         /404                        404
+
+# ── SPA fallback — MUST be last ─────────────────────────────
+/*  /index.html  200
