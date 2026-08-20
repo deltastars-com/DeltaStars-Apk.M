@@ -3,6 +3,12 @@
 # Security-hardened deployment with optimized function settings.
 # ══════════════════════════════════════════════════════════════
 
+# ── Build Configuration ──────────────────────────────────────
+[build]
+  command = "npm run build"
+  publish = "www"
+  functions = "netlify/functions"
+
 # ── Serverless Functions Configuration ────────────────────────
 [functions]
   directory = "netlify/functions"
