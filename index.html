@@ -307,6 +307,54 @@
       })();
     </script>
 
+    <!-- ═══ PWA Auto-Update Notification ═══ -->
+    <script>
+      (function() {
+        if (!('serviceWorker' in navigator)) return;
+        var SW_UPDATE_INTERVAL = 60000; // Check for updates every 60 seconds
+        var pendingWorker = null;
+
+        navigator.serviceWorker.register('/service-worker.js').then(function(reg) {
+          // Check for updates periodically
+          setInterval(function() { reg.update().catch(function() {}); }, SW_UPDATE_INTERVAL);
+
+          // Listen for new service worker waiting
+          reg.addEventListener('updatefound', function() {
+            var newSW = reg.installing;
+            if (!newSW) return;
+            newSW.addEventListener('statechange', function() {
+              if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
+                pendingWorker = newSW;
+                showUpdateBanner();
+              }
+            });
+          });
+        }).catch(function() {});
+
+        // Listen for controlling SW change
+        navigator.serviceWorker.addEventListener('controllerchange', function() {
+          if (pendingWorker) {
+            pendingWorker = null;
+            location.reload();
+          }
+        });
+
+        function showUpdateBanner() {
+          if (document.getElementById('ds-update-banner')) return;
+          var banner = document.createElement('div');
+          banner.id = 'ds-update-banner';
+          banner.innerHTML = '<div style="position:fixed;bottom:0;left:0;right:0;z-index:99999;background:#ca8a04;color:#0b1d0b;padding:14px 20px;display:flex;align-items:center;justify-content:center;gap:12px;font-family:Tajawal,Cairo,system-ui,sans-serif;font-weight:700;box-shadow:0 -4px 20px rgba(0,0,0,0.3);"><span style="flex:1;text-align:center;font-size:15px;">🔄️ يوجد تحديث جديد للمتجر! اضغط للتحديث</span><button onclick="if(window.pendingSWWorker)window.pendingSWWorker.postMessage({type:\'SKIP_WAITING\'})" style="background:#0b1d0b;color:#ca8a04;border:0;padding:10px 24px;border-radius:12px;font-size:15px;font-weight:900;cursor:pointer;white-space:nowrap;">تحديث الآن</button></div>';
+          document.body.appendChild(banner);
+          // Make the skip button work
+          banner.querySelector('button').onclick = function() {
+            if (navigator.serviceWorker.controller) {
+              navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' });
+            }
+          };
+        }
+      })();
+    </script>
+
     <!-- fetchpriority=high tells Chrome to load the main bundle first -->
     <script nomodule>!function(){var e=document,t=e.createElement("script");if(!("noModule"in t)&&"onbeforeload"in t){var n=!1;e.addEventListener("beforeload",(function(e){if(e.target===t)n=!0;else if(!e.target.hasAttribute("nomodule")||!n)return;e.preventDefault()}),!0),t.type="module",t.src=".",e.head.appendChild(t),t.remove()}}();</script>
     <script nomodule crossorigin id="vite-legacy-polyfill" src="/assets/polyfills-legacy-c8gKkfae.js"></script>

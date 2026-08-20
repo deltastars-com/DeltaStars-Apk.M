@@ -1,0 +1,107 @@
+name: Auto Update Dependencies
+
+on:
+  schedule:
+    # Run every Monday at 00:00 UTC
+    - cron: '0 0 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update-deps:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Check for updates
+        id: check
+        run: |
+          # Check npm outdated
+          OUTDATED=$(npm outdated --json 2>/dev/null || echo '{}')
+          if [ "$OUTDATED" = '{}' ]; then
+            echo "has_updates=false" >> $GITHUB_OUTPUT
+            echo "✅ No updates available"
+          else
+            echo "has_updates=true" >> $GITHUB_OUTPUT
+            echo "📦 Updates available:"
+            echo "$OUTDATED" | head -20
+          fi
+
+      - name: Create update PR
+        if: steps.check.outputs.has_updates == 'true'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: 'chore: update dependencies [skip ci]'
+          title: '🔄 Weekly Dependency Update'
+          body: |
+            ## 🔄 تحديث أسبوعي للاعتماديات
+            
+            تم التحقق من التحديثات تلقائياً وتم إنشاء هذا الـ PR.
+            
+            ### التغييرات:
+            - تحديث الاعتماديات إلى أحدث إصدار
+            - تحسين الأمان والأداء
+            
+            ### للتحقق:
+            ```bash
+            npm install
+            npm run build:web
+            ```
+            
+            ---
+            🤖 تم الإنشاء تلقائياً
+          branch: auto-update/weekly
+          delete-branch: true
+
+  check-health:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Run health checks
+        run: |
+          echo "🔍 Running health checks..."
+          
+          # Check if key files exist
+          for file in index.html manifest.json service-worker.js package.json netlify.toml _headers _redirects; do
+            if [ ! -f "$file" ]; then
+              echo "❌ Missing: $file"
+              exit 1
+            fi
+            echo "✅ Found: $file"
+          done
+          
+          # Check assets directory
+          if [ ! -d "assets" ]; then
+            echo "❌ Missing: assets/"
+            exit 1
+          fi
+          echo "✅ Found: assets/ ($(ls assets/*.js 2>/dev/null | wc -l) JS files)"
+          
+          # Check netlify functions
+          if [ ! -d "netlify/functions" ]; then
+            echo "❌ Missing: netlify/functions/"
+            exit 1
+          fi
+          echo "✅ Found: netlify/functions/ ($(ls netlify/functions/*.mjs netlify/functions/*.ts 2>/dev/null | wc -l) functions)"
+          
+          echo ""
+          echo "✅ All health checks passed!"

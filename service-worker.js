@@ -1,10 +1,11 @@
 // ══════════════════════════════════════════════════════════════
-// Delta Stars Store — Advanced Service Worker v9
-// Features: Multi-layer caching with size limits, offline fallback, push notifications,
-// periodic background sync, security monitoring, and performance optimization.
+// Delta Stars Store — Advanced Service Worker v10
+// Features: Auto-update detection, multi-layer caching with size limits,
+// offline fallback, push notifications, periodic background sync,
+// and performance optimization.
 // ══════════════════════════════════════════════════════════════
 
-const CACHE_VERSION = 'v9';
+const CACHE_VERSION = 'v10';
 const CACHE_NAME = `delta-stars-shell-${CACHE_VERSION}`;
 const CACHE_IMAGES = `delta-stars-images-${CACHE_VERSION}`;
 const CACHE_FONTS = `delta-stars-fonts-${CACHE_VERSION}`;
@@ -79,7 +80,6 @@ async function enforceCacheLimits() {
       const cache = await caches.open(cacheName);
       const keys = await cache.keys();
       if (keys.length > maxEntries) {
-        // Remove oldest entries (FIFO eviction)
         const entriesToRemove = keys.length - maxEntries;
         for (let i = 0; i < entriesToRemove; i++) {
           await cache.delete(keys[i]);
@@ -128,6 +128,19 @@ self.addEventListener('message', (event) => {
   if (data && data.type === 'ENFORCE_LIMITS') {
     event.waitUntil(enforceCacheLimits());
   }
+
+  // Check for updates
+  if (data && data.type === 'CHECK_UPDATE') {
+    event.waitUntil(
+      self.registration.update().then(() => {
+        self.clients.matchAll().then((clients) => {
+          clients.forEach((client) => {
+            client.postMessage({ type: 'UPDATE_CHECKED', version: CACHE_VERSION });
+          });
+        });
+      })
+    );
+  }
 });
 
 // ══════════════════════════════════════════════════════════════
@@ -145,7 +158,6 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
       fetch(request)
         .then((res) => {
-          // Cache the latest HTML
           const clone = res.clone();
           caches.open(CACHE_NAME).then((c) => c.put('/', clone)).catch(() => {});
           return res;
@@ -153,7 +165,6 @@ self.addEventListener('fetch', (event) => {
         .catch(() =>
           caches.match('/').then((cached) => {
             if (cached) return cached;
-            // Offline fallback page
             return new Response(
               `<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><title>Delta Stars - Offline</title><style>body{display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;background:#0b1d0b;color:#e7f0e2;font-family:Cairo,Tajawal,system-ui,sans-serif;text-align:center;padding:20px}h1{font-size:2rem;margin:0}p{color:#7f9a78;margin:1rem 0}button{background:#ca8a04;color:#0b1d0b;border:none;padding:14px 34px;border-radius:16px;font-size:17px;font-weight:900;cursor:pointer;margin-top:1rem}</style></head><body><div><div style="font-size:4rem">🛒</div><h1>المتجر غير متاح حالياً</h1><p>يبدو أنك غير متصل بالإنترنت. يرجى التحقق من اتصالك والمحاولة مرة أخرى.</p><button onclick="location.reload()">إعادة المحاولة</button><p style="margin-top:2rem;font-size:0.8rem;opacity:0.5">نجوم دلتا • Delta Stars</p></div></body></html>`,
               { headers: { 'Content-Type': 'text/html; charset=utf-8' } }
@@ -315,7 +326,6 @@ self.addEventListener('notificationclick', (event) => {
 
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
-      // Focus existing window if open
       for (const client of windowClients) {
         if (client.url.includes(self.location.origin) && 'focus' in client) {
           client.focus();
@@ -323,7 +333,6 @@ self.addEventListener('notificationclick', (event) => {
           return;
         }
       }
-      // Open new window
       if (clients.openWindow) {
         clients.openWindow(url);
       }
@@ -338,7 +347,6 @@ if ('periodicSync' in self.registration) {
   self.addEventListener('periodicsync', (event) => {
     if (event.tag === 'sync-products') {
       event.waitUntil(
-        // Silently update product data cache
         caches.open(CACHE_API).then((cache) =>
           cache.add('/products.json').catch(() => {})
         )
