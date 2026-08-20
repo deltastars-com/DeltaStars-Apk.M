@@ -1,75 +1,42 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" prefix="og: https://ogp.me/ns#">
   <head>
-    <script type="module" crossorigin src="/assets/polyfills-e-BlhUEd.js"></script>
-
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#2d5a27" />
-    <meta name="color-scheme" content="light" />
-    
-    <!-- Performance: Preload critical resources -->
-    <link rel="preload" href="/assets/index-B-UNmT5u.js" as="script" type="text/javascript" crossorigin>
-    <link rel="preload" href="/assets/react-core-6ShM5mP9.js" as="script" type="text/javascript" crossorigin>
-    <link rel="preload" href="/assets/index-BhN2ChH_.css" as="style" type="text/css" crossorigin>
-    
-    <!-- Performance: DNS prefetch for all critical origins -->
-    <link rel="dns-prefetch" href="https://api.moyasar.com">
-    <link rel="dns-prefetch" href="https://*.supabase.co">
-    <link rel="dns-prefetch" href="https://*.firebaseio.com">
-    
-    <!-- Performance: Resource hints for critical third-party -->
-    <link rel="preconnect" href="https://*.supabase.co" crossorigin>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 
-    <!-- SEO Primary -->
-    <title>نجوم دلتا | Delta Stars - أجود الخضروات والفواكه والتمور في المملكة</title>
-    <meta name="description" content="شركة نجوم دلتا التجارية — شريكك المثالي للحصول على أجود أنواع الخضروات والفواكه والتمور عالية الجودة في المملكة العربية السعودية. توصيل مبرد سريع، أسعار الجملة، منتجات طازجة." />
-    <meta name="keywords" content="نجوم دلتا, Delta Stars, خضروات طازجة, فواكه, تمور, تجارة جملة, السعودية, الرياض, جدة, توصيل منزلي, متجر إلكتروني" />
-    <meta name="author" content="نجوم دلتا للتجارة" />
-    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
-    
-    <!-- Performance: Preconnect to critical origins -->
-    <meta http-equiv="x-dns-prefetch-control" content="on">
-    <meta name="googlebot" content="index, follow" />
-    <meta name="language" content="Arabic" />
-    <meta name="revisit-after" content="7 days" />
-    <link rel="canonical" href="https://deltastars.store/" />
+    <!-- ═══ Viewport: Mobile-First Responsive ═══ -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover, shrink-to-fit=no" />
 
-    <!-- Open Graph -->
-    <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="نجوم دلتا | Delta Stars" />
-    <meta property="og:locale" content="ar_SA" />
-    <meta property="og:title" content="نجوم دلتا | Delta Stars - أجود الخضروات والفواكه والتمور" />
-    <meta property="og:description" content="أجود أنواع الخضروات والفواكه والتمور عالية الجودة في المملكة العربية السعودية. توصيل مبرد سريع لجميع مناطق المملكة." />
-    <meta property="og:image" content="https://deltastars.store/opengraph.jpg" />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="نجوم دلتا - متجر الخضروات والفواكه والتمور" />
-    <meta property="og:url" content="https://deltastars.store/" />
-
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@deltastars_sa" />
-    <meta name="twitter:title" content="نجوم دلتا | Delta Stars - أجود الخضروات والفواكه والتمور" />
-    <meta name="twitter:description" content="أجود أنواع الخضروات والفواكه والتمور عالية الجودة في المملكة العربية السعودية." />
-    <meta name="twitter:image" content="https://deltastars.store/opengraph.jpg" />
-
-    <!-- PWA & Icons -->
-    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
-    <link rel="icon" type="image/png" href="/logo.png" />
-    <link rel="apple-touch-icon" href="/icon-192.png" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/icon-192.png" />
-    <link rel="mask-icon" href="/logo.png" color="#2d5a27" />
-    <link rel="manifest" href="/manifest.json" />
-    <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="Delta Stars" />
-    <meta name="application-name" content="Delta Stars" />
+    <!-- ═══ Theme & Color ═══ -->
+    <meta name="theme-color" content="#2d5a27" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0b1d0b" media="(prefers-color-scheme: dark)" />
+    <meta name="color-scheme" content="light dark" />
     <meta name="msapplication-TileColor" content="#2d5a27" />
+    <meta name="msapplication-TileImage" content="/icon-192.png" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
-    <!-- ═══════════════════ Performance hints ═══════════════════ -->
-    <!-- DNS + TCP preconnect for every critical origin -->
+    <!-- ═══ Performance: Critical Resource Hints ═══ -->
+    <link rel="preload" href="/assets/index-B-UNmT5u.js" as="script" type="text/javascript" crossorigin />
+    <link rel="preload" href="/assets/react-core-6ShM5mP9.js" as="script" type="text/javascript" crossorigin />
+    <link rel="preload" href="/assets/index-BhN2ChH_.css" as="style" type="text/css" crossorigin />
+    <link rel="modulepreload" crossorigin href="/assets/vendors-D1Vcbi3C.js" />
+    <link rel="modulepreload" crossorigin href="/assets/firebase-CMAC4GxL.js" />
+    <link rel="modulepreload" crossorigin href="/assets/supabase-_KFDOneQ.js" />
+    <link rel="modulepreload" crossorigin href="/assets/framer-WTfApYlN.js" />
+    <link rel="modulepreload" crossorigin href="/assets/leaflet-ByHSQ2-E.js" />
+
+    <!-- DNS Prefetch + Preconnect -->
+    <meta http-equiv="x-dns-prefetch-control" content="on" />
+    <link rel="dns-prefetch" href="https://api.moyasar.com" />
+    <link rel="dns-prefetch" href="https://cdn.moyasar.com" />
+    <link rel="dns-prefetch" href="https://*.supabase.co" />
+    <link rel="dns-prefetch" href="https://*.firebaseio.com" />
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
+    <link rel="dns-prefetch" href="https://www.googleapis.com" />
+    <link rel="dns-prefetch" href="https://securetoken.googleapis.com" />
+    <link rel="dns-prefetch" href="https://generativelanguage.googleapis.com" />
+    <link rel="preconnect" href="https://*.supabase.co" crossorigin />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="preconnect" href="https://cdn.moyasar.com" crossorigin />
@@ -78,53 +45,119 @@
     <link rel="preconnect" href="https://identitytoolkit.googleapis.com" crossorigin />
     <link rel="preconnect" href="https://lh3.googleusercontent.com" crossorigin />
 
-    <!-- DNS-only prefetch for origins used later (Firebase realtime, CDNs) -->
-    <link rel="dns-prefetch" href="https://www.googleapis.com" />
-    <link rel="dns-prefetch" href="https://securetoken.googleapis.com" />
-    <link rel="dns-prefetch" href="https://generativelanguage.googleapis.com" />
-    <link rel="dns-prefetch" href="https://unpkg.com" />
+    <!-- ═══ SEO: Primary Meta Tags ═══ -->
+    <title>نجوم دلتا | Delta Stars — أجود الخضروات والفواكه والتمور في المملكة العربية السعودية</title>
+    <meta name="description" content="شركة نجوم دلتا للتجارة — أكبر متجر إلكتروني للخضروات الطازجة والفواكه الموسمية والتمور الفاخرة في السعودية. توصيل مبرد مجاني من 300 ريال، أسعار الجملة، منتجات طازجة يومياً من أفضل المزارع. 🌿" />
+    <meta name="keywords" content="نجوم دلتا, Delta Stars, خضروات طازجة, فواكه, تمور, تجارة جملة, السعودية, الرياض, جدة, مكة, المدينة, توصيل منزلي, متجر إلكتروني, خضروات, فواكه طازجة, تمور مجدول, سلال خضروات, عروض خضروات" />
+    <meta name="author" content="نجوم دلتا للتجارة" />
+    <meta name="publisher" content="نجوم دلتا للتجارة" />
+    <meta name="copyright" content="© 2026 نجوم دلتا للتجارة. جميع الحقوق محفوظة." />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1, noarchive" />
+    <meta name="googlebot" content="index, follow, max-image-preview:large, max-snippet:-1" />
+    <meta name="bingbot" content="index, follow" />
+    <meta name="language" content="Arabic" />
+    <meta name="geo.region" content="SA" />
+    <meta name="geo.placename" content="الرياض" />
+    <meta name="geo.position" content="24.7136;46.6753" />
+    <meta name="ICBM" content="24.7136, 46.6753" />
+    <meta name="revisit-after" content="3 days" />
+    <link rel="canonical" href="https://deltastars.store/" />
+    <link rel="alternate" hreflang="ar" href="https://deltastars.store/" />
+    <link rel="alternate" hreflang="en" href="https://deltastars.store/?lang=en" />
+    <link rel="alternate" hreflang="x-default" href="https://deltastars.store/" />
 
-    <!-- Arabic Fonts — display=swap prevents FOIT; subset only used weights -->
-    <link rel="preload" as="style"
-          href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Tajawal:wght@400;700&display=swap" />
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Tajawal:wght@400;700&display=swap"
-          rel="stylesheet" media="print" onload="this.media='all'" />
+    <!-- ═══ Open Graph (Facebook, WhatsApp, LinkedIn) ═══ -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="نجوم دلتا | Delta Stars" />
+    <meta property="og:locale" content="ar_SA" />
+    <meta property="og:locale:alternate" content="en_US" />
+    <meta property="og:title" content="نجوم دلتا | Delta Stars — أجود الخضروات والفواكه والتمور" />
+    <meta property="og:description" content="أكبر متجر إلكتروني للخضروات الطازجة والفواكه الموسمية والتمور الفاخرة في المملكة العربية السعودية. توصيل مبرد سريع لجميع المناطق. 🌿" />
+    <meta property="og:image" content="https://deltastars.store/opengraph.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="نجوم دلتا — متجر الخضروات والفواكه والتمور عالية الجودة" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:url" content="https://deltastars.store/" />
+    <meta property="og:video" content="" />
+
+    <!-- ═══ Twitter Card (X) ═══ -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@deltastars_sa" />
+    <meta name="twitter:creator" content="@deltastars_sa" />
+    <meta name="twitter:title" content="نجوم دلتا | Delta Stars — أجود الخضروات والفواكه والتمور" />
+    <meta name="twitter:description" content="أكبر متجر إلكتروني للخضروات الطازجة والفواكه الموسمية والتمور الفاخرة في السعودية. توصيل مبرد سريع. 🌿" />
+    <meta name="twitter:image" content="https://deltastars.store/opengraph.jpg" />
+    <meta name="twitter:image:alt" content="نجوم دلتا — متجر الخضروات والفواكه والتمور" />
+
+    <!-- ═══ PWA & App Icons ═══ -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png" />
+    <link rel="apple-touch-icon" href="/icon-192.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/icon-192.png" />
+    <link rel="apple-touch-icon" sizes="152x152" href="/icon-192.png" />
+    <link rel="apple-touch-icon" sizes="144x144" href="/icon-192.png" />
+    <link rel="apple-touch-icon" sizes="120x120" href="/icon-192.png" />
+    <link rel="apple-touch-icon" sizes="114x114" href="/icon-192.png" />
+    <link rel="apple-touch-icon" sizes="76x76" href="/icon-192.png" />
+    <link rel="apple-touch-icon" sizes="72x72" href="/icon-192.png" />
+    <link rel="apple-touch-icon" sizes="60x60" href="/icon-192.png" />
+    <link rel="apple-touch-icon" sizes="57x57" href="/icon-192.png" />
+    <link rel="mask-icon" href="/logo.png" color="#2d5a27" />
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="نجوم دلتا" />
+    <meta name="application-name" content="نجوم دلتا | Delta Stars" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="msapplication-start-url" content="/" />
+    <meta name="msapplication-config" content="/browserconfig.xml" />
+
+    <!-- ═══ Fonts (Async, display=swap) ═══ -->
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Tajawal:wght@400;700&display=swap" />
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Tajawal:wght@400;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
     <noscript>
       <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Tajawal:wght@400;700&display=swap" rel="stylesheet" />
     </noscript>
 
-    <!-- Leaflet CSS — loaded async; only needed on tracking/map page -->
-    <link rel="preload" as="style"
-          href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-    <link rel="stylesheet"
-          href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""
-          media="print" onload="this.media='all'" />
+    <!-- ═══ Leaflet CSS (Async) ═══ -->
+    <link rel="preload" as="style" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" media="print" onload="this.media='all'" />
     <noscript>
-      <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-            integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+      <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
     </noscript>
 
-    <!-- Moyasar CSS — preloaded so payment form renders without FOUC -->
+    <!-- ═══ Moyasar Payment CSS ═══ -->
     <link rel="preload" as="style" href="https://cdn.moyasar.com/mpf/1.x/moyasar.css" />
     <link rel="stylesheet" href="https://cdn.moyasar.com/mpf/1.x/moyasar.css" />
 
-    <!-- Structured Data JSON-LD -->
+    <!-- ═══ Application CSS ═══ -->
+    <link rel="stylesheet" crossorigin href="/assets/leaflet-a6kZMJSm.css" />
+    <link rel="stylesheet" crossorigin href="/assets/index-BhN2ChH_.css" />
+
+    <!-- ═══ Structured Data: Organization ═══ -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "GroceryStore",
-      "name": "نجوم دلتا | Delta Stars",
-      "alternateName": "Delta Stars Store",
+      "@type": "Organization",
+      "@id": "https://deltastars.store/#organization",
+      "name": "نجوم دلتا للتجارة",
+      "alternateName": ["Delta Stars", "نجوم دلتا", "Delta Stars Store"],
       "url": "https://deltastars.store",
-      "logo": "https://deltastars.store/logo.png",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://deltastars.store/logo.png",
+        "width": 532,
+        "height": 752
+      },
       "image": "https://deltastars.store/opengraph.jpg",
-      "description": "متجر نجوم دلتا للخضروات والفواكه والتمور عالية الجودة في المملكة العربية السعودية. توصيل مبرد سريع لجميع مناطق المملكة.",
-      "telephone": "+966500000000",
+      "description": "شركة نجوم دلتا للتجارة — أكبر متجر إلكتروني للخضروات والفواكه والتمور في المملكة العربية السعودية",
+      "telephone": "+966558828009",
       "email": "info@deltastars.store",
       "address": {
         "@type": "PostalAddress",
+        "streetAddress": "المملكة العربية السعودية",
         "addressCountry": "SA",
         "addressRegion": "الرياض",
         "addressLocality": "الرياض"
@@ -134,10 +167,54 @@
         "latitude": 24.7136,
         "longitude": 46.6753
       },
+      "sameAs": [
+        "https://twitter.com/deltastars_sa",
+        "https://www.instagram.com/deltastars_sa",
+        "https://www.snapchat.com/add/deltastars_sa",
+        "https://www.tiktok.com/@deltastars_sa",
+        "https://www.facebook.com/deltastars_sa"
+      ],
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "telephone": "+966558828009",
+        "contactType": "customer service",
+        "availableLanguage": ["Arabic", "English"],
+        "areaServed": "SA"
+      }
+    }
+    </script>
+
+    <!-- ═══ Structured Data: GroceryStore ═══ -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "GroceryStore",
+      "@id": "https://deltastars.store/#store",
+      "name": "نجوم دلتا | Delta Stars",
+      "alternateName": "Delta Stars Store",
+      "url": "https://deltastars.store",
+      "logo": "https://deltastars.store/logo.png",
+      "image": "https://deltastars.store/opengraph.jpg",
+      "description": "متجر نجوم دلتا للخضروات والفواكه والتمور عالية الجودة في المملكة العربية السعودية. توصيل مبرد سريع لجميع مناطق المملكة.",
+      "telephone": "+966558828009",
+      "email": "info@deltastars.store",
       "priceRange": "$$",
       "currenciesAccepted": "SAR",
-      "paymentAccepted": "بطاقة ائتمان، مدى، STC Pay، Apple Pay",
-      "openingHours": "Mo-Su 08:00-22:00",
+      "paymentAccepted": "بطاقة ائتمان، مدى، Apple Pay، تحويل بنكي",
+      "openingHoursSpecification": [
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Saturday","Sunday"],
+          "opens": "08:00",
+          "closes": "22:00"
+        },
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": "Friday",
+          "opens": "16:00",
+          "closes": "22:00"
+        }
+      ],
       "hasOfferCatalog": {
         "@type": "OfferCatalog",
         "name": "كتالوج نجوم دلتا",
@@ -145,15 +222,10 @@
           {"@type": "Offer", "itemOffered": {"@type": "Product", "name": "خضروات طازجة", "category": "خضروات"}},
           {"@type": "Offer", "itemOffered": {"@type": "Product", "name": "فواكه موسمية", "category": "فواكه"}},
           {"@type": "Offer", "itemOffered": {"@type": "Product", "name": "تمور فاخرة", "category": "تمور"}},
+          {"@type": "Offer", "itemOffered": {"@type": "Product", "name": "سلال خضروات", "category": "سلات"}},
           {"@type": "Offer", "itemOffered": {"@type": "Product", "name": "منتجات أسطوانية", "category": "تمور"}}
         ]
       },
-      "sameAs": [
-        "https://twitter.com/deltastars_sa",
-        "https://www.instagram.com/deltastars_sa",
-        "https://www.snapchat.com/add/deltastars_sa",
-        "https://www.tiktok.com/@deltastars_sa"
-      ],
       "aggregateRating": {
         "@type": "AggregateRating",
         "ratingValue": "4.8",
@@ -163,20 +235,30 @@
       }
     }
     </script>
+
+    <!-- ═══ Structured Data: WebSite ═══ -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "WebSite",
+      "@id": "https://deltastars.store/#website",
       "url": "https://deltastars.store",
       "name": "نجوم دلتا | Delta Stars",
       "description": "متجر نجوم دلتا للخضروات والفواكه والتمور عالية الجودة",
+      "publisher": {"@id": "https://deltastars.store/#organization"},
+      "inLanguage": "ar",
       "potentialAction": {
         "@type": "SearchAction",
-        "target": "https://deltastars.store/?search={search_term_string}",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://deltastars.store/?search={search_term_string}"
+        },
         "query-input": "required name=search_term_string"
       }
     }
     </script>
+
+    <!-- ═══ Structured Data: BreadcrumbList ═══ -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -189,43 +271,81 @@
     }
     </script>
 
-    <!-- Moyasar Payment SDK JS — defer so it doesn't block first paint -->
+    <!-- ═══ Structured Data: FAQ ═══ -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "كيف أطلب من متجر نجوم دلتا؟",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "تصفح المنتجات وأضفها للسلة، ثم أدخل بياناتك واختر طريقة الدفع. الحد الأدنى 50 ريال فقط."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "هل التوصيل مجاني؟",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "التوصيل مجاني للطلبات من 300 ريال فأكثر. للطلبات الأقل تبدأ رسوم التوصيل من 15 ريال."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "ما هي طرق الدفع المتاحة؟",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "نقبل الدفع عبر بطاقات الائتمان (مدى، فيزا، ماستركارد)، Apple Pay، والتحويل البنكي المباشر للشركات."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "هل توجد فروع في مدن أخرى؟",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "نعم، لدينا 6 فروع: الرياض، جدة، مكة المكرمة، المدينة المنورة، أبها، ومكة المركزية. نوصيل لجميع مناطق المملكة."
+          }
+        }
+      ]
+    }
+    </script>
+
+    <!-- ═══ Moyasar Payment SDK ═══ -->
     <script src="https://cdn.moyasar.com/mpf/1.x/moyasar.js" defer></script>
-    
-    <!-- Main Application Bundle — fetchpriority=high for fastest load -->
+
+    <!-- ═══ Main Application Bundle ═══ -->
     <script type="module" crossorigin src="/assets/index-B-UNmT5u.js" fetchpriority="high"></script>
-    <link rel="modulepreload" crossorigin href="/assets/react-core-6ShM5mP9.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendors-D1Vcbi3C.js">
-    <link rel="modulepreload" crossorigin href="/assets/firebase-CMAC4GxL.js">
-    <link rel="modulepreload" crossorigin href="/assets/supabase-_KFDOneQ.js">
-    <link rel="modulepreload" crossorigin href="/assets/framer-WTfApYlN.js">
-    <link rel="modulepreload" crossorigin href="/assets/leaflet-ByHSQ2-E.js">
-    <link rel="stylesheet" crossorigin href="/assets/leaflet-a6kZMJSm.css">
-    <link rel="stylesheet" crossorigin href="/assets/index-BhN2ChH_.css">
+
+    <!-- ═══ Vite Module Detection ═══ -->
     <script type="module">import'data:text/javascript,if(!import.meta.resolve)throw Error("import.meta.resolve not supported")';import.meta.url;import("_").catch(()=>1);(async function*(){})().next();window.__vite_is_modern_browser=true</script>
     <script type="module">!function(){if(window.__vite_is_modern_browser)return;console.warn("vite: loading legacy chunks, syntax error above and the same error below should be ignored");var e=document.getElementById("vite-legacy-polyfill"),n=document.createElement("script");n.src=e.src,n.onload=function(){System.import(document.getElementById('vite-legacy-entry').getAttribute('data-src'))},document.body.appendChild(n)}();</script>
   </head>
-  <body>
+  <body itemscope itemtype="https://schema.org/WebPage">
     <div id="root">
-      <!-- Boot screen: shows instantly so users never see a blank white page.
-           React replaces #root on first commit; the recovery script below turns
-           any load failure into a visible message with a one-tap fix. -->
-      <div id="ds-boot" style="position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;background:#0b1d0b;font-family:'Tajawal','Cairo',system-ui,-apple-system,'Segoe UI',Arial,sans-serif;">
-        <div style="width:64px;height:64px;border:5px solid rgba(202,138,4,0.25);border-top-color:#ca8a04;border-radius:50%;animation:dsspin 0.9s linear infinite;"></div>
+      <!-- Boot screen: shows instantly so users never see a blank white page -->
+      <div id="ds-boot" role="status" aria-label="جارٍ تحميل المتجر" style="position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;background:#0b1d0b;font-family:'Tajawal','Cairo',system-ui,-apple-system,'Segoe UI',Arial,sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;">
+        <img src="/icon-192.png" alt="نجوم دلتا" width="80" height="80" style="border-radius:20px;box-shadow:0 4px 20px rgba(0,0,0,0.3);" />
+        <div style="width:56px;height:56px;border:4px solid rgba(202,138,4,0.25);border-top-color:#ca8a04;border-radius:50%;animation:dsspin 0.9s linear infinite;" aria-hidden="true"></div>
         <p style="color:#e7f0e2;font-size:18px;font-weight:700;margin:0;letter-spacing:.3px;">جارٍ تحميل المتجر…</p>
         <p style="color:#7f9a78;font-size:13px;font-weight:700;margin:0;">نجوم دلتا • Delta Stars</p>
       </div>
     </div>
     <style>@keyframes dsspin{to{transform:rotate(360deg)}}</style>
+
+    <!-- Noscript fallback -->
     <noscript>
-      <div style="padding:32px;text-align:center;font-family:sans-serif;color:#0b1d0b;background:#fff;">
-        يرجى تفعيل JavaScript في المتصفح لعرض متجر نجوم دلتا.
+      <div style="padding:32px;text-align:center;font-family:'Tajawal','Cairo',sans-serif;color:#0b1d0b;background:#fff;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+        <img src="/icon-192.png" alt="نجوم دلتا" width="64" height="64" style="border-radius:16px;margin-bottom:16px;" />
+        <h1 style="font-size:24px;margin:0 0 8px;">نجوم دلتا</h1>
+        <p style="font-size:16px;margin:0 0 24px;color:#666;">يرجى تفعيل JavaScript في المتصفح لعرض المتجر.</p>
+        <a href="https://deltastars.store" style="background:#2d5a27;color:#fff;padding:12px 24px;border-radius:12px;text-decoration:none;font-weight:700;">إعادة المحاولة</a>
       </div>
     </noscript>
 
-    <!-- ── Self-healing boot guard (classic script: runs on ALL browsers) ──
-         Detects a stale-cache / failed-load / old-browser blank page and either
-         auto-recovers (clears caches + SW once) or shows a retry screen. -->
+    <!-- ═══ Self-healing boot guard ═══ -->
     <script>
       (function () {
         var BOOT_TIMEOUT = 12000;
@@ -274,12 +394,10 @@
           if (b) b.onclick = function () { clearAndReload(false); };
         }
         window.__dsAppMounted = function () { booted = true; removeBootScreen(); };
-        // Also remove boot screen the moment React renders anything into #root
         try {
           var rootEl = document.getElementById('root');
           if (rootEl && window.MutationObserver) {
             var mo = new MutationObserver(function () {
-              // If React mounted real content alongside / replacing ds-boot, hide it
               var hasReact = false;
               for (var i = 0; i < rootEl.children.length; i++) {
                 if (rootEl.children[i].id !== 'ds-boot') { hasReact = true; break; }
@@ -290,11 +408,6 @@
           }
         } catch (e) {}
         window.__dsShowRecovery = showError;
-        // Auto-recover ONLY when one of OUR OWN app script chunks fails to load
-        // (the genuine fatal case: a stale SW serving a deleted hashed file).
-        // Third-party CDN assets (fonts, Leaflet CSS, Moyasar SDK) failing — common
-        // behind ad-blockers / in-app browsers — must NOT wipe caches or reload,
-        // since the store still works without them.
         window.addEventListener('error', function (e) {
           var t = e && e.target;
           if (!t || t.tagName !== 'SCRIPT') return;
@@ -311,14 +424,10 @@
     <script>
       (function() {
         if (!('serviceWorker' in navigator)) return;
-        var SW_UPDATE_INTERVAL = 60000; // Check for updates every 60 seconds
+        var SW_UPDATE_INTERVAL = 60000;
         var pendingWorker = null;
-
         navigator.serviceWorker.register('/service-worker.js').then(function(reg) {
-          // Check for updates periodically
           setInterval(function() { reg.update().catch(function() {}); }, SW_UPDATE_INTERVAL);
-
-          // Listen for new service worker waiting
           reg.addEventListener('updatefound', function() {
             var newSW = reg.installing;
             if (!newSW) return;
@@ -330,23 +439,17 @@
             });
           });
         }).catch(function() {});
-
-        // Listen for controlling SW change
         navigator.serviceWorker.addEventListener('controllerchange', function() {
-          if (pendingWorker) {
-            pendingWorker = null;
-            location.reload();
-          }
+          if (pendingWorker) { pendingWorker = null; location.reload(); }
         });
-
         function showUpdateBanner() {
           if (document.getElementById('ds-update-banner')) return;
           var banner = document.createElement('div');
           banner.id = 'ds-update-banner';
-          banner.innerHTML = '<div style="position:fixed;bottom:0;left:0;right:0;z-index:99999;background:#ca8a04;color:#0b1d0b;padding:14px 20px;display:flex;align-items:center;justify-content:center;gap:12px;font-family:Tajawal,Cairo,system-ui,sans-serif;font-weight:700;box-shadow:0 -4px 20px rgba(0,0,0,0.3);"><span style="flex:1;text-align:center;font-size:15px;">🔄️ يوجد تحديث جديد للمتجر! اضغط للتحديث</span><button onclick="if(window.pendingSWWorker)window.pendingSWWorker.postMessage({type:\'SKIP_WAITING\'})" style="background:#0b1d0b;color:#ca8a04;border:0;padding:10px 24px;border-radius:12px;font-size:15px;font-weight:900;cursor:pointer;white-space:nowrap;">تحديث الآن</button></div>';
+          banner.setAttribute('role', 'alert');
+          banner.innerHTML = '<div style="position:fixed;bottom:0;left:0;right:0;z-index:99999;background:#ca8a04;color:#0b1d0b;padding:14px 20px;display:flex;align-items:center;justify-content:center;gap:12px;font-family:Tajawal,Cairo,system-ui,sans-serif;font-weight:700;box-shadow:0 -4px 20px rgba(0,0,0,0.3);"><span style="flex:1;text-align:center;font-size:15px;">🔄️ يوجد تحديث جديد للمتجر! اضغط للتحديث</span><button id="ds-update-btn" style="background:#0b1d0b;color:#ca8a04;border:0;padding:10px 24px;border-radius:12px;font-size:15px;font-weight:900;cursor:pointer;white-space:nowrap;">تحديث الآن</button></div>';
           document.body.appendChild(banner);
-          // Make the skip button work
-          banner.querySelector('button').onclick = function() {
+          document.getElementById('ds-update-btn').onclick = function() {
             if (navigator.serviceWorker.controller) {
               navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' });
             }
@@ -355,7 +458,7 @@
       })();
     </script>
 
-    <!-- fetchpriority=high tells Chrome to load the main bundle first -->
+    <!-- ═══ Legacy Browser Support ═══ -->
     <script nomodule>!function(){var e=document,t=e.createElement("script");if(!("noModule"in t)&&"onbeforeload"in t){var n=!1;e.addEventListener("beforeload",(function(e){if(e.target===t)n=!0;else if(!e.target.hasAttribute("nomodule")||!n)return;e.preventDefault()}),!0),t.type="module",t.src=".",e.head.appendChild(t),t.remove()}}();</script>
     <script nomodule crossorigin id="vite-legacy-polyfill" src="/assets/polyfills-legacy-c8gKkfae.js"></script>
     <script nomodule crossorigin id="vite-legacy-entry" data-src="/assets/index-legacy-CbqVmv4K.js">System.import(document.getElementById('vite-legacy-entry').getAttribute('data-src'))</script>
