@@ -1,60 +1,41 @@
-# This workflow will build a Node.js project and deploy it to an Azure Functions App on Windows or Linux when a commit is pushed to your default branch.
-#
-# This workflow assumes you have already created the target Azure Functions app.
-# For instructions see:
-#   - https://learn.microsoft.com/en-us/azure/azure-functions/create-first-function-vs-code-node
-#   - https://learn.microsoft.com/en-us/azure/azure-functions/create-first-function-vs-code-typescript
-#
-# To configure this workflow:
-# 1. Set up the following secrets in your repository:
-#   - AZURE_FUNCTIONAPP_PUBLISH_PROFILE
-# 2. Change env variables for your configuration.
-#
-# For more information on:
-#   - GitHub Actions for Azure: https://github.com/Azure/Actions
-#   - Azure Functions Action: https://github.com/Azure/functions-action
-#   - Publish Profile: https://github.com/Azure/functions-action#using-publish-profile-as-deployment-credential-recommended
-#   - Azure Service Principal for RBAC: https://github.com/Azure/functions-action#using-azure-service-principal-for-rbac-as-deployment-credential
-#
-# For more samples to get started with GitHub Action workflows to deploy to Azure: https://github.com/Azure/actions-workflow-samples/tree/master/FunctionApp
+# This Azure Functions workflow is DISABLED.
+# This project deploys as a static site to GitHub Pages + Netlify serverless functions.
+# The correct workflows are: deploy-pages.yml, build-android.yml, build-ios.yml, release.yml
 
-name: Deploy Node.js project to Azure Function App
+name: Deploy Node.js project to Azure Function App (DISABLED)
 
 on:
-  push:
-    branches: ["main"]
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type "confirm" to run this legacy workflow'
+        required: false
 
 env:
-  AZURE_FUNCTIONAPP_NAME: 'your-app-name'   # set this to your function app name on Azure
-  AZURE_FUNCTIONAPP_PACKAGE_PATH: '.'       # set this to the path to your function app project, defaults to the repository root
-  NODE_VERSION: '20.x'                      # set this to the node version to use (e.g. '8.x', '10.x', '12.x')
+  AZURE_FUNCTIONAPP_NAME: 'deltastars-store'
+  AZURE_FUNCTIONAPP_PACKAGE_PATH: '.'
+  NODE_VERSION: '20.x'
 
 jobs:
   build-and-deploy:
-    runs-on: windows-latest # For Linux, use ubuntu-latest
+    if: github.event.inputs.confirm == 'confirm'
+    runs-on: ubuntu-latest
     environment: dev
     steps:
     - name: 'Checkout GitHub Action'
       uses: actions/checkout@v4
 
-    # If you want to use Azure RBAC instead of Publish Profile, then uncomment the task below
-    # - name: 'Login via Azure CLI'
-    #   uses: azure/login@v1
-    #   with:
-    #     creds: ${{ secrets.AZURE_RBAC_CREDENTIALS }} # set up AZURE_RBAC_CREDENTIALS secrets in your repository
-
-    - name: Setup Node ${{ env.NODE_VERSION }} Environment
+    - name Setup Node ${{ env.NODE_VERSION }} Environment
       uses: actions/setup-node@v4
       with:
         node-version: ${{ env.NODE_VERSION }}
 
     - name: 'Resolve Project Dependencies Using Npm'
-      shell: pwsh # For Linux, use bash
+      shell: bash
       run: |
         pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
         npm install
-        npm run build --if-present
-        npm run test --if-present
+        sh ./scripts/build-web.sh
         popd
 
     - name: 'Run Azure Functions Action'
@@ -63,4 +44,4 @@ jobs:
       with:
         app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
         package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
-        publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }} # Remove publish-profile to use Azure RBAC
+        publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
