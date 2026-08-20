@@ -1,3 +1,27 @@
 <svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
-<rect width="180" height="180" rx="36" fill="#FF3C00"/>
+  <!-- Background: rounded rectangle matching the logo shape -->
+  <rect width="180" height="180" rx="40" fill="#ffffff"/>
+  <rect width="180" height="180" rx="40" stroke="#2d5a27" stroke-width="4"/>
+  
+  <!-- DS monogram - stylized with leaf elements -->
+  <!-- D letter -->
+  <path d="M50 50 L50 130 Q50 135 55 135 L90 135 Q120 135 120 100 Q120 65 90 65 L55 65 Q50 65 50 50Z" 
+        fill="#2d5a27" stroke="none"/>
+  <path d="M70 80 L95 80 Q105 80 105 100 Q105 120 95 120 L70 120Z" fill="#ffffff"/>
+  
+  <!-- S letter overlapping -->
+  <path d="M95 45 Q75 45 75 65 Q75 80 95 85 Q115 90 115 105 Q115 130 90 130 L85 130" 
+        stroke="#4a8c3f" stroke-width="8" fill="none" stroke-linecap="round"/>
+  
+  <!-- Leaf accents on top -->
+  <path d="M75 35 Q80 15 95 20 Q85 25 80 40Z" fill="#4a8c3f"/>
+  <path d="M100 30 Q110 12 118 22 Q108 28 100 38Z" fill="#2d5a27"/>
+  
+  <!-- Small stars -->
+  <circle cx="42" cy="90" r="4" fill="#ca8a04"/>
+  <circle cx="138" cy="90" r="4" fill="#ca8a04"/>
+  
+  <!-- Bottom text area -->
+  <rect x="30" y="145" width="120" height="2" rx="1" fill="#2d5a27"/>
+  <text x="90" y="165" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#2d5a27">DS</text>
 </svg>

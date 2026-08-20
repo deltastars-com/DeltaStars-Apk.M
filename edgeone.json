@@ -1,7 +1,7 @@
 {
   "$schema": "https://edgeone.ai/schema/config.json",
   "name": "deltastars-store",
-  "version": "3.1.1",
+  "version": "3.2.0",
   "framework": "static",
   "build": {
     "install": "npm install",
@@ -40,6 +40,50 @@
     {
       "src": "/api/contact",
       "dest": "/netlify/functions/contact-form"
+    },
+    {
+      "src": "/api/ai-chat",
+      "dest": "/netlify/functions/ai-chat"
+    },
+    {
+      "src": "/api/health",
+      "dest": "/netlify/functions/health-check"
+    },
+    {
+      "src": "/api/order/complete",
+      "dest": "/netlify/functions/order-complete"
+    },
+    {
+      "src": "/api/order/confirm",
+      "dest": "/netlify/functions/order-confirm"
+    },
+    {
+      "src": "/api/customer/recognize",
+      "dest": "/netlify/functions/customer-recognize"
+    },
+    {
+      "src": "/api/b2b/company",
+      "dest": "/netlify/functions/b2b-company"
+    },
+    {
+      "src": "/api/notifications",
+      "dest": "/netlify/functions/notifications"
+    },
+    {
+      "src": "/api/security/check",
+      "dest": "/netlify/functions/security-check"
+    },
+    {
+      "src": "/api/analytics/predict",
+      "dest": "/netlify/functions/analytics-predict"
+    },
+    {
+      "src": "/api/delivery/track",
+      "dest": "/netlify/functions/delivery-track"
+    },
+    {
+      "src": "/api/biometric/auth",
+      "dest": "/netlify/functions/biometric-auth"
     },
     {
       "src": "/(.*)",

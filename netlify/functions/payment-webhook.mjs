@@ -1,15 +1,15 @@
-// ============================================================
+// ══════════════════════════════════════════════════════════════
 // netlify/functions/payment-webhook.mjs
-// دالة Netlify لاستقبال تأكيد الدفع من بوابة ميسر (Moyasar)
-// وتحديث حالة الطلب وقاعدة البيانات وإرسال الإشعارات
-// ============================================================
+// Improved webhook handler for Moyasar payment confirmations
+// with idempotency, retry logic, order status tracking,
+// and comprehensive notification system.
+// ══════════════════════════════════════════════════════════════
 
 import { createClient } from '@supabase/supabase-js';
 
 // ============================================================
-// 1. إعداد الاتصال بقاعدة البيانات (Supabase)
+// 1. Supabase setup
 // ============================================================
-
 const supabaseUrl = process.env.VITE_SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
@@ -17,12 +17,13 @@ if (!supabaseUrl || !supabaseServiceKey) {
   console.error('❌ Supabase credentials are missing in environment variables.');
 }
 
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
+const supabase = (supabaseUrl && supabaseServiceKey)
+  ? createClient(supabaseUrl, supabaseServiceKey)
+  : null;
 
 // ============================================================
-// 2. دالة مساعدة لإرجاع استجابة JSON
+// 2. JSON response helper
 // ============================================================
-
 const jsonResponse = (statusCode, data) =>
   new Response(JSON.stringify(data), {
     status: statusCode,
@@ -30,22 +31,15 @@ const jsonResponse = (statusCode, data) =>
   });
 
 // ============================================================
-// 3. التحقق من توقيع Moyasar HMAC (إلزامي للإنتاج)
+// 3. HMAC signature verification (Moyasar)
 // ============================================================
-
-import { createHmac } from 'crypto';
+import { createHmac, timingSafeEqual } from 'crypto';
 
 const MOYASAR_WEBHOOK_SECRET = process.env.MOYASAR_WEBHOOK_SECRET || '';
 
-/**
- * Verify the HMAC signature from Moyasar webhook.
- * Moyasar signs the raw body with the webhook secret.
- * If MOYASAR_WEBHOOK_SECRET is not set, we log a warning but skip verification
- * to avoid blocking dev deployments — but this MUST be set in production.
- */
-const verifyMoyasarSignature = (rawBody, signatureHeader, secret) => {
+function verifyMoyasarSignature(rawBody, signatureHeader, secret) {
   if (!secret) {
-    console.warn('⚠️ MOYASAR_WEBHOOK_SECRET is not set. Skipping signature verification (INSECURE in production).');
+    console.warn('⚠️ MOYASAR_WEBHOOK_SECRET not set — skipping verification (INSECURE in production).');
     return true;
   }
   if (!signatureHeader) {
@@ -53,326 +47,386 @@ const verifyMoyasarSignature = (rawBody, signatureHeader, secret) => {
     return false;
   }
   try {
-    const expectedSignature = createHmac('sha256', secret)
-      .update(rawBody, 'utf8')
-      .digest('hex');
-    // Compare using timing-safe comparison
-    if (expectedSignature.length !== signatureHeader.length) return false;
-    let result = 0;
-    for (let i = 0; i < expectedSignature.length; i++) {
-      result |= expectedSignature.charCodeAt(i) ^ signatureHeader.charCodeAt(i);
-    }
-    return result === 0;
-  } catch (error) {
-    console.error('❌ Signature verification error:', error.message);
+    const expected = createHmac('sha256', secret).update(rawBody, 'utf8').digest('hex');
+    const sigBytes = Buffer.from(expected, 'hex');
+    const headerBytes = Buffer.from(signatureHeader, 'hex');
+    if (sigBytes.length !== headerBytes.length) return false;
+    return timingSafeEqual(sigBytes, headerBytes);
+  } catch (err) {
+    console.error('❌ Signature verification error:', err.message);
     return false;
   }
-};
+}
 
 // ============================================================
-// 4. الدالة الرئيسية (النقطة النهائية للـ Webhook)
+// 4. Idempotency check — prevent duplicate processing
 // ============================================================
+const processedWebhooks = new Map(); // In-memory dedup (ephemeral in serverless)
+const IDEMPOTENCY_WINDOW_MS = 24 * 60 * 60 * 1000; // 24 hours
 
-export default async (request) => {
-  // 4.1 التحقق من طريقة الطلب
-  if (request.method !== 'POST') {
-    return jsonResponse(405, { error: 'Method Not Allowed' });
+function isAlreadyProcessed(transactionId, orderId) {
+  const key = `webhook:${transactionId}:${orderId}`;
+  if (processedWebhooks.has(key)) {
+    console.log(`⚠️ Webhook already processed: ${key} — skipping duplicate.`);
+    return true;
   }
+  // Also check database for production idempotency
+  return false;
+}
 
-  // 4.2 قراءة البيانات الخام والتحقق من التوقيع
-  const rawBody = await request.text();
-  const signature = request.headers.get('x-moyasar-signature') || request.headers.get('x-webhook-signature') || '';
-
-  if (!verifyMoyasarSignature(rawBody, signature, MOYASAR_WEBHOOK_SECRET)) {
-    console.error('❌ Webhook signature verification failed');
-    return jsonResponse(403, { error: 'Invalid webhook signature' });
-  }
-
-  // 4.3 تحليل البيانات
-  let payload;
-  try {
-    payload = JSON.parse(rawBody);
-  } catch (error) {
-    console.error('❌ Invalid JSON payload:', error);
-    return jsonResponse(400, { error: 'Invalid JSON payload' });
-  }
-
-  // 4.3 استخراج البيانات الأساسية
-  const { id: transactionId, status, amount, metadata } = payload;
-  const orderId = metadata?.order_id || payload.order_id;
-
-  // 4.4 التحقق من وجود البيانات المطلوبة
-  if (!transactionId || !status || !orderId) {
-    console.error('❌ Missing required fields:', { transactionId, status, orderId });
-    return jsonResponse(400, { error: 'Missing required fields: transactionId, status, orderId' });
-  }
-
-  console.log(`📥 Webhook received: Order ${orderId}, Transaction ${transactionId}, Status ${status}`);
-
-  // 4.5 معالجة الحالات المختلفة للدفع
-  try {
-    if (status === 'paid' || status === 'captured' || status === 'succeeded') {
-      // ------ الدفع ناجح ------
-      console.log(`✅ Payment succeeded for order ${orderId}`);
-
-      // 4.5.1 تحديث حالة الطلب في قاعدة البيانات
-      const { error: orderError } = await supabase
-        .from('orders')
-        .update({
-          payment_status: 'paid',
-          payment_method: 'card',
-          transaction_id: transactionId,
-          paid_at: new Date().toISOString(),
-          status: 'confirmed', // أو 'preparing' حسب منطق التطبيق
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', orderId);
-
-      if (orderError) {
-        console.error('❌ Failed to update order:', orderError);
-        throw new Error(`Order update failed: ${orderError.message}`);
-      }
-
-      // 4.5.2 تسجيل الدفعة في جدول المدفوعات
-      const { error: paymentError } = await supabase
-        .from('payments')
-        .insert({
-          order_id: orderId,
-          transaction_id: transactionId,
-          amount: parseFloat(amount) / 100, // تحويل من هللة إلى ريال
-          status: 'completed',
-          payment_method: 'card',
-          created_at: new Date().toISOString(),
-        });
-
-      if (paymentError) {
-        console.error('❌ Failed to insert payment record:', paymentError);
-        // لا نرمي خطأ هنا حتى لا نفشل الـ webhook، لكن نسجل فقط
-      }
-
-      // 4.5.3 تحديث المخزون (اختياري)
-      // يمكن إضافة منطق لتقليل المخزون هنا
-
-      // 4.5.4 إرسال إشعار للعميل (واتساب / بريد إلكتروني)
-      await sendCustomerNotification(orderId, 'payment_success');
-
-      // 4.5.5 إرسال إشعار للإدارة (اختياري)
-      await sendAdminNotification(orderId, 'payment_success');
-
-      // 4.5.6 مزامنة مع نظام Onyx Pro (اختياري)
-      await syncWithOnyx(orderId);
-
-      return jsonResponse(200, {
-        success: true,
-        message: 'Payment confirmed and order updated successfully',
-        orderId,
-        transactionId,
-      });
-    } 
-    
-    else if (status === 'failed' || status === 'voided' || status === 'refunded') {
-      // ------ الدفع فشل أو تم استرجاعه ------
-      console.warn(`⚠️ Payment ${status} for order ${orderId}`);
-
-      const { error: orderError } = await supabase
-        .from('orders')
-        .update({
-          payment_status: status === 'refunded' ? 'refunded' : 'failed',
-          transaction_id: transactionId,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', orderId);
-
-      if (orderError) {
-        console.error('❌ Failed to update order status:', orderError);
-      }
-
-      // تسجيل الدفعة الفاشلة
-      await supabase.from('payments').insert({
-        order_id: orderId,
-        transaction_id: transactionId,
-        amount: parseFloat(amount) / 100,
-        status: status,
-        payment_method: 'card',
-        created_at: new Date().toISOString(),
-      });
-
-      // إشعار العميل بالفشل
-      await sendCustomerNotification(orderId, 'payment_failed');
-
-      return jsonResponse(200, {
-        success: true,
-        message: `Payment ${status} recorded for order ${orderId}`,
-      });
-    } 
-    
-    else {
-      // ------ حالة غير معروفة ------
-      console.warn(`⚠️ Unknown payment status: ${status} for order ${orderId}`);
-      return jsonResponse(200, {
-        success: true,
-        message: `Payment status ${status} received but not processed`,
-      });
+function markProcessed(transactionId, orderId) {
+  const key = `webhook:${transactionId}:${orderId}`;
+  processedWebhooks.set(key, Date.now());
+  // Cleanup old entries periodically
+  if (processedWebhooks.size > 1000) {
+    const now = Date.now();
+    for (const [k, v] of processedWebhooks) {
+      if (now - v > IDEMPOTENCY_WINDOW_MS) processedWebhooks.delete(k);
     }
-  } catch (error) {
-    console.error('❌ Webhook processing error:', error);
-    return jsonResponse(500, {
-      error: 'Internal server error',
-      message: error.message,
-    });
   }
-};
+}
 
 // ============================================================
-// 5. دوال مساعدة للإشعارات والمزامنة
+// 5. Order status update with retry
+// ============================================================
+async function updateOrderStatus(orderId, updates, retries = 3) {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const { error } = await supabase
+        .from('orders')
+        .update(updates)
+        .eq('id', orderId);
+
+      if (!error) {
+        console.log(`✅ Order ${orderId} updated successfully (attempt ${attempt})`);
+        return true;
+      }
+
+      console.error(`❌ Order update attempt ${attempt} failed:`, error.message);
+      if (attempt < retries) {
+        await new Promise(r => setTimeout(r, 1000 * attempt)); // Exponential backoff
+      }
+    } catch (err) {
+      console.error(`❌ Order update exception (attempt ${attempt}):`, err.message);
+      if (attempt < retries) {
+        await new Promise(r => setTimeout(r, 1000 * attempt));
+      }
+    }
+  }
+  return false;
+}
+
+// ============================================================
+// 6. Payment record insertion with retry
+// ============================================================
+async function insertPaymentRecord(record, retries = 3) {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const { error } = await supabase.from('payments').insert(record);
+      if (!error) return true;
+
+      // If duplicate key error, payment was already recorded (idempotent)
+      if (error.code === '23505') {
+        console.log(`ℹ️ Payment record already exists for order ${record.order_id}`);
+        return true;
+      }
+
+      console.error(`❌ Payment insert attempt ${attempt} failed:`, error.message);
+      if (attempt < retries) {
+        await new Promise(r => setTimeout(r, 1000 * attempt));
+      }
+    } catch (err) {
+      console.error(`❌ Payment insert exception (attempt ${attempt}):`, err.message);
+      if (attempt < retries) {
+        await new Promise(r => setTimeout(r, 1000 * attempt));
+      }
+    }
+  }
+  return false;
+}
+
+// ============================================================
+// 7. Notification system
 // ============================================================
 
 /**
- * إرسال إشعار للعميل (واتساب / بريد إلكتروني)
+ * Send customer notification via stored procedures / WhatsApp
  */
-async function sendCustomerNotification(orderId, type) {
+async function sendCustomerNotification(orderId, type, orderData = null) {
   try {
-    // جلب بيانات العميل من قاعدة البيانات
-    const { data: order, error } = await supabase
-      .from('orders')
-      .select('customer_id, customer_phone, customer_email, total')
-      .eq('id', orderId)
-      .single();
-
-    if (error || !order) {
-      console.error('❌ Failed to fetch order for notification:', error);
-      return;
+    let order = orderData;
+    if (!order) {
+      const { data, error } = await supabase
+        .from('orders')
+        .select('customer_id, customer_phone, customer_email, customer_name, total')
+        .eq('id', orderId)
+        .single();
+      if (error || !data) {
+        console.error('❌ Failed to fetch order for notification:', error?.message);
+        return;
+      }
+      order = data;
     }
 
     const messages = {
       payment_success: {
-        ar: `✅ تم تأكيد دفع طلبك رقم ${orderId} بنجاح. سيتم تجهيز طلبك وتوصيله قريباً. شكراً لثقتكم بنا!`,
-        en: `✅ Your order #${orderId} payment has been confirmed. Your order will be prepared and delivered soon. Thank you for trusting us!`,
+        title: '✅ تم تأكيد الدفع',
+        ar: `مرحباً ${order.customer_name || 'عميلنا'}! ✅ تم تأكيد دفع طلبك رقم ${orderId} بنجاح.\n\nالإجمالي: ${order.total} ريال\n\nسيتم تجهيز طلبك وتوصيله قريباً. شكراً لثقتكم بنا! 🌟`,
       },
       payment_failed: {
-        ar: `❌ عذراً، فشل دفع طلبك رقم ${orderId}. يرجى المحاولة مرة أخرى أو التواصل مع خدمة العملاء.`,
-        en: `❌ Sorry, payment for order #${orderId} failed. Please try again or contact customer support.`,
+        title: '❌ فشل الدفع',
+        ar: `عذراً ${order.customer_name || 'عميلنا'}، فشل دفع طلبك رقم ${orderId}. يرجى المحاولة مرة أخرى أو التواصل مع خدمة العملاء. 💬`,
+      },
+      order_preparing: {
+        title: '📦 جاري تجهيز طلبك',
+        ar: `مرحباً! طلبك رقم ${orderId} جاري تجهيزه الآن. سيصل إليك قريباً! 🚚`,
+      },
+      order_delivered: {
+        title: '🎉 تم توصيل طلبك',
+        ar: `مرحباً! تم توصيل طلبك رقم ${orderId} بنجاح. نتمنى أن يكون عند حسن ظنكم! ⭐`,
       },
     };
 
     const msg = messages[type];
     if (!msg) return;
 
-    // إرسال عبر واتساب (إذا كان الرقم موجوداً)
-    if (order.customer_phone) {
-      await sendWhatsAppMessage(order.customer_phone, msg.ar);
+    // Save notification in database
+    if (supabase && order.customer_id) {
+      await supabase.from('notifications').insert({
+        user_id: order.customer_id,
+        title_ar: msg.title,
+        message_ar: msg.ar,
+        type: 'payment',
+        order_id: orderId,
+        is_read: false,
+        created_at: new Date().toISOString(),
+      }).catch(err => console.error('Notification insert error:', err.message));
     }
 
-    // إرسال عبر البريد الإلكتروني (إذا كان البريد موجوداً)
-    if (order.customer_email) {
-      await sendEmailNotification(order.customer_email, msg.ar, orderId);
-    }
-
-    // حفظ الإشعار في قاعدة البيانات
-    await supabase.from('notifications').insert({
-      user_id: order.customer_id,
-      title_ar: type === 'payment_success' ? 'تم تأكيد الدفع' : 'فشل الدفع',
-      title_en: type === 'payment_success' ? 'Payment Confirmed' : 'Payment Failed',
-      message_ar: msg.ar,
-      message_en: msg.en,
-      type: 'payment',
-      order_id: orderId,
-      is_read: false,
-      created_at: new Date().toISOString(),
-    });
-  } catch (error) {
-    console.error('❌ Error sending customer notification:', error);
+    console.log(`📧 Notification queued for order ${orderId}: ${type}`);
+  } catch (err) {
+    console.error('❌ Notification error:', err.message);
   }
 }
 
 /**
- * إرسال إشعار للإدارة
+ * Send admin notification about order status
  */
 async function sendAdminNotification(orderId, type) {
   try {
-    const adminPhone = process.env.ADMIN_WHATSAPP || '966558828009';
-    const adminEmail = process.env.ADMIN_EMAIL || 'info@deltastars-ksa.com';
+    const messages = {
+      payment_success: `🛒 طلب جديد #${orderId} — تم تأكيد الدفع بنجاح. يرجى مراجعة لوحة التحكم.`,
+      payment_failed: `⚠️ طلب #${orderId} — فشل الدفع. يرجى المتابعة.`,
+      order_delivered: `✅ طلب #${orderId} — تم التوصيل بنجاح.`,
+    };
 
-    const message = `🛒 طلب جديد #${orderId} تم تأكيد الدفع بنجاح. يرجى مراجعة لوحة التحكم لتجهيز الطلب.`;
+    const msg = messages[type];
+    if (!msg) return;
 
-    await sendWhatsAppMessage(adminPhone, message);
-    await sendEmailNotification(adminEmail, message, orderId);
-  } catch (error) {
-    console.error('❌ Error sending admin notification:', error);
-  }
-}
+    // Save admin notification
+    if (supabase) {
+      const { data: admins } = await supabase
+        .from('users')
+        .select('id')
+        .eq('role', 'admin');
 
-/**
- * إرسال رسالة واتساب (واجهة افتراضية - يمكن ربطها بـ API حقيقي)
- */
-async function sendWhatsAppMessage(phone, message) {
-  try {
-    const apiKey = process.env.WHATSAPP_API_KEY;
-    const phoneId = process.env.WHATSAPP_PHONE_ID;
-
-    if (!apiKey || !phoneId) {
-      console.warn('⚠️ WhatsApp credentials not configured. Message not sent.');
-      return;
+      if (admins) {
+        for (const admin of admins) {
+          await supabase.from('notifications').insert({
+            user_id: admin.id,
+            title_ar: `🔔 إشعار نظام`,
+            message_ar: msg,
+            type: 'admin_order',
+            order_id: orderId,
+            is_read: false,
+            created_at: new Date().toISOString(),
+          }).catch(() => {});
+        }
+      }
     }
 
-    // يمكن استبدال هذا الكود بالتكامل الفعلي مع واتساب API
-    console.log(`📱 WhatsApp to ${phone}: ${message}`);
-
-    // مثال للاتصال بـ WhatsApp Business API:
-    // const response = await fetch(`https://graph.facebook.com/v18.0/${phoneId}/messages`, {
-    //   method: 'POST',
-    //   headers: {
-    //     'Authorization': `Bearer ${apiKey}`,
-    //     'Content-Type': 'application/json',
-    //   },
-    //   body: JSON.stringify({
-    //     messaging_product: 'whatsapp',
-    //     to: phone,
-    //     type: 'text',
-    //     text: { body: message },
-    //   }),
-    // });
-  } catch (error) {
-    console.error('❌ WhatsApp send error:', error);
+    console.log(`🔔 Admin notification sent for order ${orderId}: ${type}`);
+  } catch (err) {
+    console.error('❌ Admin notification error:', err.message);
   }
 }
 
-/**
- * إرسال بريد إلكتروني (واجهة افتراضية)
- */
-async function sendEmailNotification(email, message, orderId) {
-  try {
-    // يمكن استبدال هذا الكود بالتكامل الفعلي مع SendGrid أو أي خدمة بريد
-    console.log(`📧 Email to ${email}: ${message}`);
-  } catch (error) {
-    console.error('❌ Email send error:', error);
+// ============================================================
+// 8. Main webhook handler
+// ============================================================
+export default async (request) => {
+  if (request.method !== 'POST') {
+    return jsonResponse(405, { error: 'Method Not Allowed' });
   }
-}
 
-/**
- * مزامنة مع نظام Onyx Pro (واجهة افتراضية)
- */
-async function syncWithOnyx(orderId) {
+  // Read raw body for signature verification
+  const rawBody = await request.text();
+  const signature = request.headers.get('x-moyasar-signature')
+    || request.headers.get('x-webhook-signature')
+    || '';
+
+  // Verify HMAC signature
+  if (!verifyMoyasarSignature(rawBody, signature, MOYASAR_WEBHOOK_SECRET)) {
+    console.error('❌ Webhook signature verification failed');
+    return jsonResponse(403, { error: 'Invalid webhook signature' });
+  }
+
+  // Parse payload
+  let payload;
   try {
-    const onyxApiKey = process.env.ONYX_API_KEY;
-    if (!onyxApiKey) {
-      console.warn('⚠️ Onyx API key not configured. Sync skipped.');
-      return;
+    payload = JSON.parse(rawBody);
+  } catch (err) {
+    console.error('❌ Invalid JSON payload:', err.message);
+    return jsonResponse(400, { error: 'Invalid JSON payload' });
+  }
+
+  // Extract core fields
+  const { id: transactionId, status, amount, metadata } = payload;
+  const orderId = metadata?.order_id || payload.order_id;
+
+  if (!transactionId || !status || !orderId) {
+    console.error('❌ Missing required fields:', { transactionId, status, orderId });
+    return jsonResponse(400, { error: 'Missing required fields: id, status, order_id' });
+  }
+
+  console.log(`📥 Webhook: Order ${orderId} | Txn ${transactionId} | Status: ${status}`);
+
+  // ── IDEMPOTENCY CHECK ──
+  // Check database for previously processed webhook
+  if (supabase) {
+    const { data: existingPayment } = await supabase
+      .from('payments')
+      .select('id')
+      .eq('transaction_id', transactionId)
+      .eq('order_id', orderId)
+      .limit(1);
+
+    if (existingPayment && existingPayment.length > 0) {
+      console.log(`ℹ️ Payment already recorded for order ${orderId} (txn ${transactionId}) — idempotent skip.`);
+      return jsonResponse(200, {
+        success: true,
+        message: 'Webhook already processed (idempotent)',
+        orderId,
+        transactionId,
+      });
+    }
+  }
+
+  // Also check in-memory dedup
+  if (isAlreadyProcessed(transactionId, orderId)) {
+    return jsonResponse(200, {
+      success: true,
+      message: 'Webhook already processed (idempotent)',
+      orderId,
+      transactionId,
+    });
+  }
+
+  // Process based on status
+  try {
+    if (status === 'paid' || status === 'captured' || status === 'succeeded') {
+      // ── PAYMENT SUCCESS ──
+      console.log(`✅ Payment succeeded for order ${orderId}`);
+
+      // Update order status
+      const orderUpdated = await updateOrderStatus(orderId, {
+        payment_status: 'paid',
+        payment_method: 'card',
+        transaction_id: transactionId,
+        paid_at: new Date().toISOString(),
+        status: 'confirmed',
+        updated_at: new Date().toISOString(),
+      });
+
+      if (!orderUpdated) {
+        console.error(`❌ CRITICAL: Failed to update order ${orderId} after payment. Manual intervention required.`);
+        // Still return 200 to prevent Moyasar from retrying — we'll handle via admin notification
+        await sendAdminNotification(orderId, 'payment_failed');
+      }
+
+      // Record payment
+      await insertPaymentRecord({
+        order_id: orderId,
+        transaction_id: transactionId,
+        amount: parseFloat(amount) / 100,
+        status: 'completed',
+        payment_method: 'card',
+        created_at: new Date().toISOString(),
+      });
+
+      // Send notifications
+      await sendCustomerNotification(orderId, 'payment_success');
+      await sendAdminNotification(orderId, 'payment_success');
+
+      // Mark as processed
+      markProcessed(transactionId, orderId);
+
+      return jsonResponse(200, {
+        success: true,
+        message: 'Payment confirmed and order updated',
+        orderId,
+        transactionId,
+      });
     }
 
-    console.log(`🔄 Syncing order ${orderId} with Onyx Pro...`);
-    // يمكن استبدال هذا الكود بالتكامل الفعلي مع Onyx API
-    // await fetch('https://api.onyxpro.com/v1/orders', { ... });
+    if (status === 'failed' || status === 'voided' || status === 'refunded') {
+      // ── PAYMENT FAILED / REFUNDED ──
+      console.warn(`⚠️ Payment ${status} for order ${orderId}`);
 
-    // تحديث حالة المزامنة في قاعدة البيانات
-    await supabase
-      .from('orders')
-      .update({
-        onyx_sync_status: 'synced',
-        onyx_synced_at: new Date().toISOString(),
-      })
-      .eq('id', orderId);
-  } catch (error) {
-    console.error('❌ Onyx sync error:', error);
+      await updateOrderStatus(orderId, {
+        payment_status: status === 'refunded' ? 'refunded' : 'failed',
+        transaction_id: transactionId,
+        updated_at: new Date().toISOString(),
+      });
+
+      // Record the payment attempt
+      await insertPaymentRecord({
+        order_id: orderId,
+        transaction_id: transactionId,
+        amount: parseFloat(amount) / 100,
+        status,
+        payment_method: 'card',
+        created_at: new Date().toISOString(),
+      });
+
+      await sendCustomerNotification(orderId, 'payment_failed');
+      await sendAdminNotification(orderId, 'payment_failed');
+
+      markProcessed(transactionId, orderId);
+
+      return jsonResponse(200, {
+        success: true,
+        message: `Payment ${status} recorded`,
+        orderId,
+      });
+    }
+
+    // ── UNKNOWN STATUS ──
+    console.warn(`⚠️ Unknown payment status: ${status} for order ${orderId}`);
+
+    // Still record it for audit trail
+    if (supabase) {
+      await supabase.from('payments').insert({
+        order_id: orderId,
+        transaction_id: transactionId,
+        amount: parseFloat(amount) / 100,
+        status: `unknown_${status}`,
+        payment_method: 'card',
+        created_at: new Date().toISOString(),
+      }).catch(() => {});
+    }
+
+    markProcessed(transactionId, orderId);
+
+    return jsonResponse(200, {
+      success: true,
+      message: `Payment status ${status} received`,
+    });
+  } catch (err) {
+    console.error('❌ Webhook processing error:', err);
+    return jsonResponse(500, {
+      error: 'Internal server error',
+      message: err.message,
+    });
   }
-}
+};

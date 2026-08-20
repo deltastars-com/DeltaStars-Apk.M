@@ -41,7 +41,18 @@
     { "source": "/api/payment/verify", "destination": "/netlify/functions/verify-payment" },
     { "source": "/api/payment/cancel", "destination": "/netlify/functions/cancel-payment" },
     { "source": "/api/payment/webhook", "destination": "/netlify/functions/payment-webhook" },
-    { "source": "/api/contact", "destination": "/netlify/functions/contact-form" }
+    { "source": "/api/contact", "destination": "/netlify/functions/contact-form" },
+    { "source": "/api/ai-chat", "destination": "/netlify/functions/ai-chat" },
+    { "source": "/api/health", "destination": "/netlify/functions/health-check" },
+    { "source": "/api/order/complete", "destination": "/netlify/functions/order-complete" },
+    { "source": "/api/order/confirm", "destination": "/netlify/functions/order-confirm" },
+    { "source": "/api/customer/recognize", "destination": "/netlify/functions/customer-recognize" },
+    { "source": "/api/b2b/company", "destination": "/netlify/functions/b2b-company" },
+    { "source": "/api/notifications", "destination": "/netlify/functions/notifications" },
+    { "source": "/api/security/check", "destination": "/netlify/functions/security-check" },
+    { "source": "/api/analytics/predict", "destination": "/netlify/functions/analytics-predict" },
+    { "source": "/api/delivery/track", "destination": "/netlify/functions/delivery-track" },
+    { "source": "/api/biometric/auth", "destination": "/netlify/functions/biometric-auth" }
   ],
   "redirects": [
     { "source": "/(.*)", "destination": "/index.html", "permanent": false }

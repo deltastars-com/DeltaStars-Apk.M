@@ -1,64 +1,121 @@
-// ================================================================
+// ══════════════════════════════════════════════════════════════
 // netlify/functions/cancel-payment.mjs
-// إلغاء طلب دفع معلق عبر بوابة ميسر (Moyasar)
-// ================================================================
+// Cancel a pending payment via Moyasar with improved validation,
+// rate limiting, CORS, and Arabic error messages.
+// ══════════════════════════════════════════════════════════════
 
-// --------------------------------------------
-// 1. إعدادات ميسر الأساسية
-// --------------------------------------------
+import { Redis } from '@upstash/redis';
 
+// ── Configuration ──────────────────────────────────────────
 const MOYASAR_API_URL = 'https://api.moyasar.com/v1';
 const MOYASAR_SECRET_KEY = process.env.MOYASAR_SECRET_KEY || process.env.VITE_MOYASAR_SECRET_KEY;
+const RATE_LIMIT_MAX = 5;
+const RATE_LIMIT_WINDOW = 60000; // 1 minute
 
-if (!MOYASAR_SECRET_KEY) {
-  console.error('❌ MOYASAR_SECRET_KEY is not set in environment variables.');
+// ── Rate limiting ──────────────────────────────────────────
+let redis = null;
+function getRedis() {
+  if (redis) return redis;
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (!url || !token) return null;
+  redis = new Redis({ url, token });
+  return redis;
 }
 
-// --------------------------------------------
-// 2. دالة مساعدة لإرجاع استجابة JSON
-// --------------------------------------------
+const memoryStore = new Map();
 
-const jsonResponse = (status, data) =>
-  new Response(JSON.stringify(data), {
-    status,
-    headers: { 'Content-Type': 'application/json' },
-  });
+async function checkRateLimit(key, limit, windowMs) {
+  const client = getRedis();
+  const now = Date.now();
+  const resetAt = now + windowMs;
+  if (client) {
+    try {
+      const multi = client.multi();
+      multi.incr(`ratelimit:${key}`);
+      multi.pexpire(`ratelimit:${key}`, windowMs);
+      multi.pttl(`ratelimit:${key}`);
+      const results = await multi.exec();
+      const count = results[0];
+      const ttl = results[2];
+      return { allowed: count <= limit, remaining: Math.max(0, limit - count), resetAt: ttl > 0 ? now + ttl : resetAt };
+    } catch (e) { console.error('Redis error:', e); }
+  }
+  const entry = memoryStore.get(key);
+  if (!entry || now > entry.resetAt) {
+    memoryStore.set(key, { count: 1, resetAt });
+    return { allowed: true, remaining: limit - 1, resetAt };
+  }
+  entry.count++;
+  return { allowed: entry.count <= limit, remaining: Math.max(0, limit - entry.count), resetAt: entry.resetAt };
+}
 
-// --------------------------------------------
-// 3. الدالة الرئيسية
-// --------------------------------------------
+// ── Helpers ────────────────────────────────────────────────
+const securityHeaders = {
+  'Content-Type': 'application/json; charset=utf-8',
+  'X-Content-Type-Options': 'nosniff',
+  'Cache-Control': 'no-store, no-cache, must-revalidate',
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type',
+};
 
+const json = (status, obj) =>
+  new Response(JSON.stringify(obj), { status, headers: securityHeaders });
+
+function isValidPaymentId(id) {
+  return typeof id === 'string' && /^pay_[a-zA-Z0-9_-]{8,64}$/.test(id);
+}
+
+// ══════════════════════════════════════════════════════════════
+// MAIN HANDLER
+// ══════════════════════════════════════════════════════════════
 export default async (request) => {
-  // 3.1 التحقق من طريقة الطلب
-  if (request.method !== 'POST') {
-    return jsonResponse(405, { error: 'Method Not Allowed' });
+  if (request.method === 'OPTIONS') {
+    return new Response(null, { status: 204, headers: securityHeaders });
   }
 
-  // 3.2 قراءة البيانات المرسلة من العميل
+  if (request.method !== 'POST') {
+    return json(405, { error: 'Method Not Allowed' });
+  }
+
+  // Rate limiting
+  const clientIP = request.headers.get('x-forwarded-for')?.split(',')[0] || request.headers.get('x-real-ip') || 'unknown';
+  const rateLimit = await checkRateLimit(`payment:cancel:${clientIP}`, RATE_LIMIT_MAX, RATE_LIMIT_WINDOW);
+  if (!rateLimit.allowed) {
+    return json(429, {
+      error: 'تم تجاوز الحد المسموح. يرجى المحاولة بعد قليل.',
+      retryAfter: Math.ceil((rateLimit.resetAt - Date.now()) / 1000),
+    });
+  }
+
+  // Parse body
   let body;
   try {
     body = await request.json();
   } catch {
-    return jsonResponse(400, { error: 'Invalid JSON payload' });
+    return json(400, { error: 'بيانات غير صالحة' });
   }
 
   const { paymentId } = body;
 
   if (!paymentId) {
-    return jsonResponse(400, { error: 'Missing paymentId' });
+    return json(400, { error: 'رقم الدفع (paymentId) مطلوب' });
   }
 
-  // 3.3 التحقق من وجود المفتاح السري
+  if (!isValidPaymentId(paymentId)) {
+    return json(400, { error: 'رقم الدفع غير صحيح' });
+  }
+
   if (!MOYASAR_SECRET_KEY) {
     console.error('❌ Moyasar secret key is missing.');
-    return jsonResponse(500, { error: 'Payment service is not configured.' });
+    return json(500, { error: 'خدمة الدفع غير مهيأة حالياً.' });
   }
 
   try {
-    // 3.4 إلغاء الدفع عبر Moyasar API
     console.log(`🗑️ Cancelling payment: ${paymentId}`);
 
-    // أولاً: جلب حالة الدفع للتأكد من أنه معلق
+    // First: fetch payment status to check if it's cancellable
     const getResponse = await fetch(`${MOYASAR_API_URL}/payments/${paymentId}`, {
       method: 'GET',
       headers: {
@@ -70,32 +127,32 @@ export default async (request) => {
     const paymentData = await getResponse.json();
 
     if (!getResponse.ok) {
-      return jsonResponse(getResponse.status, {
-        error: paymentData.message || 'فشل في جلب بيانات الدفع',
+      const msg = paymentData.message || paymentData.error || 'فشل في جلب بيانات الدفع';
+      return json(getResponse.status, { error: msg });
+    }
+
+    // Check if payment is in a cancellable state
+    const cancellableStatuses = ['pending', 'initiated'];
+    if (!cancellableStatuses.includes(paymentData.status)) {
+      const statusMessages = {
+        paid: 'الدفع مكتمل بالفعل ولا يمكن إلغاؤه.',
+        captured: 'تم احتواء المبلغ ولا يمكن إلغاؤه. يمكنك طلب استرداد.',
+        failed: 'الدفع فشل بالفعل.',
+        refunded: 'تم استرداد المبلغ بالفعل.',
+        voided: 'تم إلغاء الدفع بالفعل.',
+      };
+      return json(400, {
+        error: statusMessages[paymentData.status] || `لا يمكن إلغاء الدفع (${paymentData.status}).`,
+        currentStatus: paymentData.status,
       });
     }
 
-    // التحقق من أن الدفع في حالة قابلة للإلغاء (pending أو initiated)
-    if (paymentData.status !== 'pending' && paymentData.status !== 'initiated') {
-      return jsonResponse(400, {
-        error: `Cannot cancel payment with status: ${paymentData.status}`,
-      });
-    }
+    // Cancel: use void for pending, refund for initiated
+    const cancelEndpoint = paymentData.status === 'pending'
+      ? `${MOYASAR_API_URL}/payments/${paymentId}/void`
+      : `${MOYASAR_API_URL}/payments/${paymentId}/refund`;
 
-    // إلغاء الدفع (لا توجد واجهة مباشرة للإلغاء في Moyasar v1،
-    // لذلك نقوم بتحديث حالة الدفع يدوياً أو استخدام واجهة الاسترداد)
-    // ملاحظة: Moyasar قد لا تدعم الإلغاء المباشر، لذا يمكن استخدام refund أو void.
-    // نستخدم void إذا كان الدفع غير محتجز، أو refund إذا كان محتجزاً.
-    let cancelUrl;
-    if (paymentData.status === 'pending') {
-      // يمكن إلغاء عن طريق void
-      cancelUrl = `${MOYASAR_API_URL}/payments/${paymentId}/void`;
-    } else {
-      // يمكن استرداد المبلغ
-      cancelUrl = `${MOYASAR_API_URL}/payments/${paymentId}/refund`;
-    }
-
-    const cancelResponse = await fetch(cancelUrl, {
+    const cancelResponse = await fetch(cancelEndpoint, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${MOYASAR_SECRET_KEY}`,
@@ -107,14 +164,13 @@ export default async (request) => {
 
     if (!cancelResponse.ok) {
       console.error('❌ Moyasar cancellation error:', cancelData);
-      return jsonResponse(cancelResponse.status, {
-        error: cancelData.message || 'فشل في إلغاء الدفع',
-        details: cancelData,
+      return json(cancelResponse.status, {
+        error: cancelData.message || 'فشل في إلغاء الدفع. حاول مرة أخرى.',
       });
     }
 
     console.log(`✅ Payment cancelled: ${paymentId}`);
-    return jsonResponse(200, {
+    return json(200, {
       success: true,
       message: 'تم إلغاء الدفع بنجاح',
       paymentId,
@@ -122,9 +178,6 @@ export default async (request) => {
     });
   } catch (error) {
     console.error('❌ Error cancelling payment:', error);
-    return jsonResponse(500, {
-      error: 'Internal server error',
-      message: error.message,
-    });
+    return json(500, { error: 'حدث خطأ غير متوقع. يرجى المحاولة لاحقاً.' });
   }
 };

@@ -39,6 +39,17 @@
 /api/payment/cancel      /.netlify/functions/cancel-payment        200
 /api/payment/webhook     /.netlify/functions/payment-webhook      200
 /api/contact             /.netlify/functions/contact-form          200
+/api/ai-chat             /.netlify/functions/ai-chat               200
+/api/order/complete      /.netlify/functions/order-complete        200
+/api/health              /.netlify/functions/health-check          200
+/api/order/confirm       /.netlify/functions/order-confirm         200
+/api/customer/recognize  /.netlify/functions/customer-recognize    200
+/api/b2b/company         /.netlify/functions/b2b-company           200
+/api/notifications       /.netlify/functions/notifications         200
+/api/security/check      /.netlify/functions/security-check        200
+/api/analytics/predict   /.netlify/functions/analytics-predict     200
+/api/delivery/track      /.netlify/functions/delivery-track        200
+/api/biometric/auth      /.netlify/functions/biometric-auth        200
 
 # ── Canonical-domain redirects (enforce HTTPS + apex) ────────
 https://www.deltastars.store/*   https://deltastars.store/:splat  301!
