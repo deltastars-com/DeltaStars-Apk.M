@@ -21,7 +21,8 @@ jobs:
 
       - name: Create web release zip
         run: |
-          zip -r deltastars-v${{ steps.version.outputs.VERSION }}-web.zip \
+          VERSION=${{ steps.version.outputs.VERSION }}
+          zip -r deltastars-v${VERSION}-web.zip \
             index.html \
             robots.txt \
             security.txt \
@@ -35,7 +36,8 @@ jobs:
 
       - name: Create source code zip
         run: |
-          zip -r deltastars-v${{ steps.version.outputs.VERSION }}-source.zip \
+          VERSION=${{ steps.version.outputs.VERSION }}
+          zip -r deltastars-v${VERSION}-source.zip \
             . \
             -x ".git/*" \
             -x "node_modules/*" \
@@ -47,13 +49,16 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          name: "🚀 Delta Stars Store v${{ steps.version.outputs.VERSION }}"
+          name: "🌟 Delta Stars Store v${{ steps.version.outputs.VERSION }}"
           body: |
-            ## 🌟 نجوم دلتا — الإصدار ${{ steps.version.outputs.VERSION }}
+            ## 🌟 Delta Stars Store v${{ steps.version.outputs.VERSION }}
             
             ### 📦 الملفات المتاحة:
             - **deltastars-v${{ steps.version.outputs.VERSION }}-web.zip** — ملفات الويب الجاهزة للنشر
             - **deltastars-v${{ steps.version.outputs.VERSION }}-source.zip** — الكود المصدري الكامل
+            - **deltastars-v*-debug.apk** — تطبيق أندرويد ( Palestin debug) — يُبنى تلقائياً
+            - **deltastars-v*-release.apk** — تطبيق أندرويد ( إصدار رسمي) — يُبنى تلقائياً
+            - **deltastars-v*-ios.zip** — تطبيق iOS — يُبنى تلقائياً
             
             ### 📱 للبناء المحلي:
             ```bash
@@ -64,7 +69,7 @@ jobs:
             ```
             
             ### 🌐 الموقع المباشر:
-            https://deltastars.netlify.app
+            https://deltastars.store
             
             ---
             حقوق النشر © نجوم دلتا للتجارة

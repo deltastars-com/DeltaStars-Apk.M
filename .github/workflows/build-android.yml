@@ -43,59 +43,40 @@ jobs:
 
       - name: Build Debug APK
         working-directory: android
-        run: ./gradlew assembleDebug
+        run: sh ./gradlew assembleDebug
 
-      - name: Build Release APK
+      - name: Build Release APK (unsigned)
         working-directory: android
-        run: ./gradlew assembleRelease
+        run: sh ./gradlew assembleRelease
 
       - name: Get version
         id: version
         run: echo "VERSION=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
 
-      - name: Create full release zip
+      - name: Rename APK files
         run: |
-          zip -r deltastars-v${{ steps.version.outputs.VERSION }}-full.zip \
-            index.html \
-            robots.txt \
-            security.txt \
-            sitemap.xml \
-            terms-of-service.html \
-            privacy-policy.html \
-            manifest.json \
-            package.json \
-            assets/ \
-            android/app/build/outputs/apk/debug/app-debug.apk \
-            android/app/build/outputs/apk/release/app-release-unsigned.apk \
-            capacitor.config.ts \
-            scripts/ \
-            -x "*.DS_Store"
+          VERSION=${{ steps.version.outputs.VERSION }}
+          cp android/app/build/outputs/apk/debug/app-debug.apk deltastars-v${VERSION}-debug.apk
+          cp android/app/build/outputs/apk/release/app-release-unsigned.apk deltastars-v${VERSION}-release.apk
 
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         with:
           name: deltastars-debug-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          path: deltastars-v${{ steps.version.outputs.VERSION }}-debug.apk
 
       - name: Upload Release APK
         uses: actions/upload-artifact@v4
         with:
           name: deltastars-release-apk
-          path: android/app/build/outputs/apk/release/app-release-unsigned.apk
+          path: deltastars-v${{ steps.version.outputs.VERSION }}-release.apk
 
-      - name: Upload Full Release
-        uses: actions/upload-artifact@v4
-        with:
-          name: deltastars-full-release
-          path: deltastars-v${{ steps.version.outputs.VERSION }}-full.zip
-
-      - name: Update GitHub Release
+      - name: Update GitHub Release with APK
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            android/app/build/outputs/apk/debug/app-debug.apk
-            android/app/build/outputs/apk/release/app-release-unsigned.apk
-            deltastars-v${{ steps.version.outputs.VERSION }}-full.zip
+            deltastars-v${{ steps.version.outputs.VERSION }}-debug.apk
+            deltastars-v${{ steps.version.outputs.VERSION }}-release.apk
           draft: false
           prerelease: false
