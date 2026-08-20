@@ -1,0 +1,49 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "name": "deltastars-store",
+  "version": 2,
+  "framework": null,
+  "installCommand": "npm install",
+  "buildCommand": "npm run build:web",
+  "outputDirectory": ".",
+  "publicDir": ".",
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Frame-Options", "value": "DENY" },
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "X-XSS-Protection", "value": "1; mode=block" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        { "key": "Strict-Transport-Security", "value": "max-age=63072000; includeSubDomains; preload" },
+        { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=(self)" }
+      ]
+    },
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
+    },
+    {
+      "source": "/service-worker.js",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-store, no-cache, must-revalidate" },
+        { "key": "Service-Worker-Allowed", "value": "/" }
+      ]
+    }
+  ],
+  "rewrites": [
+    { "source": "/api/otp/send", "destination": "/netlify/functions/otp-send" },
+    { "source": "/api/otp/verify", "destination": "/netlify/functions/otp-verify" },
+    { "source": "/api/otp/notify", "destination": "/netlify/functions/otp-notify" },
+    { "source": "/api/payment/create", "destination": "/netlify/functions/create-payment-intent" },
+    { "source": "/api/payment/verify", "destination": "/netlify/functions/verify-payment" },
+    { "source": "/api/payment/cancel", "destination": "/netlify/functions/cancel-payment" },
+    { "source": "/api/payment/webhook", "destination": "/netlify/functions/payment-webhook" },
+    { "source": "/api/contact", "destination": "/netlify/functions/contact-form" }
+  ],
+  "redirects": [
+    { "source": "/(.*)", "destination": "/index.html", "permanent": false }
+  ]
+}

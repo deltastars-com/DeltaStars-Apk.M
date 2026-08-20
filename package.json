@@ -16,7 +16,11 @@
     "android": "npx cap open android",
     "ios": "npx cap open ios",
     "preview": "npx serve . -l 3000",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "deploy:vercel": "vercel --prod",
+    "deploy:edgeone": "edgeone deploy",
+    "deploy:pages": "gh workflow run deploy-pages.yml"
+  }
   },
   "dependencies": {
     "@capacitor/android": "^8.5.0",

@@ -1,0 +1,82 @@
+{
+  "$schema": "https://edgeone.ai/schema/config.json",
+  "name": "deltastars-store",
+  "version": "3.1.1",
+  "framework": "static",
+  "build": {
+    "install": "npm install",
+    "command": "npm run build:web",
+    "output": "."
+  },
+  "routes": [
+    {
+      "src": "/api/otp/send",
+      "dest": "/netlify/functions/otp-send"
+    },
+    {
+      "src": "/api/otp/verify",
+      "dest": "/netlify/functions/otp-verify"
+    },
+    {
+      "src": "/api/otp/notify",
+      "dest": "/netlify/functions/otp-notify"
+    },
+    {
+      "src": "/api/payment/create",
+      "dest": "/netlify/functions/create-payment-intent"
+    },
+    {
+      "src": "/api/payment/verify",
+      "dest": "/netlify/functions/verify-payment"
+    },
+    {
+      "src": "/api/payment/cancel",
+      "dest": "/netlify/functions/cancel-payment"
+    },
+    {
+      "src": "/api/payment/webhook",
+      "dest": "/netlify/functions/payment-webhook"
+    },
+    {
+      "src": "/api/contact",
+      "dest": "/netlify/functions/contact-form"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ],
+  "headers": {
+    "global": {
+      "X-Frame-Options": "DENY",
+      "X-Content-Type-Options": "nosniff",
+      "X-XSS-Protection": "1; mode=block",
+      "Referrer-Policy": "strict-origin-when-cross-origin",
+      "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload",
+      "Permissions-Policy": "camera=(), microphone=(), geolocation=(self)"
+    },
+    "/assets/*": {
+      "Cache-Control": "public, max-age=31536000, immutable"
+    },
+    "/service-worker.js": {
+      "Cache-Control": "no-store, no-cache, must-revalidate",
+      "Service-Worker-Allowed": "/"
+    },
+    "/api/*": {
+      "Cache-Control": "no-store, no-cache, must-revalidate, private"
+    }
+  },
+  "env": {
+    "NODE_ENV": "production"
+  },
+  "regions": ["sa", "ae", "eg", "bh", "kw", "qa", "om", "jo", "lb"],
+  "cdn": {
+    "enabled": true,
+    "compression": ["br", "gzip"],
+    "minify": {
+      "html": true,
+      "css": true,
+      "js": true
+    }
+  }
+}
