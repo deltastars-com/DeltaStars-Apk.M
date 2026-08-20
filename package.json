@@ -20,7 +20,6 @@
     "deploy:vercel": "vercel --prod",
     "deploy:edgeone": "edgeone deploy",
     "deploy:pages": "gh workflow run deploy-pages.yml"
-  }
   },
   "dependencies": {
     "@capacitor/android": "^8.5.0",
