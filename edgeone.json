@@ -5,8 +5,8 @@
   "framework": "static",
   "build": {
     "install": "npm install",
-    "command": "npm run build:web",
-    "output": "."
+    "command": "npm run build",
+    "output": "www"
   },
   "routes": [
     {
