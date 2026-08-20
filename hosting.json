@@ -1,0 +1,7 @@
+{
+  "type": "static",
+  "framework": null,
+  "buildCommand": "npm run build",
+  "outputDirectory": "www",
+  "installCommand": "npm install"
+}

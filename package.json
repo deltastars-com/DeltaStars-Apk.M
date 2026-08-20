@@ -5,6 +5,9 @@
   "description": "Delta Stars Store - Advanced secure e-commerce platform with Netlify serverless functions",
   "type": "module",
   "scripts": {
+    "build": "sh ./scripts/build-web.sh",
+    "start": "npx serve www -l 3000",
+    "preview": "npx serve www -l 3000",
     "lint:security": "echo 'Security audit passed'",
     "check:env": "node -e \"const required = ['AUTHENTICA_API_SECRET','MOYASAR_SECRET_KEY','VITE_SUPABASE_URL','VITE_SUPABASE_ANON_KEY']; required.forEach(k => { if(!process.env[k]) console.warn('⚠️  Missing:', k); });\"",
     "cap:sync": "npx cap sync",
@@ -15,7 +18,6 @@
     "build:ios": "sh ./scripts/build-ios.sh",
     "android": "npx cap open android",
     "ios": "npx cap open ios",
-    "preview": "npx serve . -l 3000",
     "typecheck": "tsc --noEmit",
     "deploy:vercel": "vercel --prod",
     "deploy:edgeone": "edgeone deploy",
