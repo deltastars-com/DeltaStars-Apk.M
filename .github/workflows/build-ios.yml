@@ -52,8 +52,16 @@ jobs:
       - name: Create IPA
         run: |
           VERSION=${{ steps.version.outputs.VERSION }}
+          # Find the .app inside the archive
+          APP_PATH=$(find ios/App/build/DeltaStars.xcarchive/Products/Applications -name "*.app" -maxdepth 1 | head -1)
+          if [ -z "$APP_PATH" ]; then
+            echo "Error: .app not found in archive"
+            find ios/App/build -name "*.app" 2>/dev/null
+            exit 1
+          fi
+          echo "Found app at: $APP_PATH"
           mkdir -p Payload
-          cp -r ios/App/build/DeltaStars.xcarchive/Products/Applications/DeltaStars.app Payload/
+          cp -r "$APP_PATH" Payload/
           zip -r deltastars-v${VERSION}-ios.zip Payload/
           rm -rf Payload
 
