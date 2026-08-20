@@ -41,13 +41,16 @@ jobs:
       - name: Sync Capacitor Android
         run: npx cap sync android
 
+      - name: Make gradlew executable
+        run: chmod +x android/gradlew
+
       - name: Build Debug APK
         working-directory: android
-        run: sh ./gradlew assembleDebug
+        run: ./gradlew assembleDebug
 
-      - name: Build Release APK (unsigned)
+      - name: Build Release APK
         working-directory: android
-        run: sh ./gradlew assembleRelease
+        run: ./gradlew assembleRelease
 
       - name: Get version
         id: version

@@ -36,16 +36,20 @@ jobs:
         id: version
         run: echo "VERSION=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
 
-      - name: Build iOS App
+      - name: Build iOS App (Archive)
         working-directory: ios/App
         run: |
           xcodebuild -project App.xcodeproj \
             -scheme App \
             -configuration Release \
+            -destination "generic/platform=iOS" \
             -archivePath build/DeltaStars.xcarchive \
-            archive
+            archive \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO
 
-      - name: Create IPA directory structure
+      - name: Create IPA
         run: |
           VERSION=${{ steps.version.outputs.VERSION }}
           mkdir -p Payload
